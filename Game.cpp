@@ -15,7 +15,7 @@
 #include <allegro5/allegro_acodec.h>
 #include <vector>
 #include <cstring>
-//git testing
+//git testing1
 // fixed settings
 constexpr char game_icon_img_path[] = "./assets/image/game_icon.png";
 constexpr char game_start_sound_path[] = "./assets/sound/growl.wav";
