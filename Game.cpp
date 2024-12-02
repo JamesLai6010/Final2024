@@ -17,9 +17,9 @@
 #include <cstring>
 //git testing1
 // fixed settings
-constexpr char game_icon_img_path[] = "./assets/image/game_icon.png";
+constexpr char game_icon_img_path[] = "./assets/image/game_icon.jpg";
 constexpr char game_start_sound_path[] = "./assets/sound/growl.wav";
-constexpr char background_img_path[] = "./assets/image/StartBackground.jpg";
+constexpr char background_img_path[] = "./assets/image/background1.png";
 constexpr char background_sound_path[] = "./assets/sound/BackgroundMusic.ogg";
 
 /**
@@ -235,16 +235,6 @@ Game::game_draw() {
 	if(state != STATE::END) {
 		// background
 		al_draw_bitmap(background, 0, 0, 0);
-		if(DC->game_field_length < DC->window_width)
-			al_draw_filled_rectangle(
-				DC->game_field_length, 0,
-				DC->window_width, DC->window_height,
-				al_map_rgb(100, 100, 100));
-		if(DC->game_field_length < DC->window_height)
-			al_draw_filled_rectangle(
-				0, DC->game_field_length,
-				DC->window_width, DC->window_height,
-				al_map_rgb(100, 100, 100));
 		// user interface
 		if(state != STATE::START) {
 			DC->level->draw();
