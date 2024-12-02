@@ -19,9 +19,9 @@
 // fixed settings
 constexpr char game_icon_img_path[] = "./assets/image/game_icon.jpg";
 constexpr char game_start_sound_path[] = "./assets/sound/growl.wav";
-constexpr char background_img_path[] = "./assets/image/background1.png";
+constexpr char background1_img_path[] = "./assets/image/background1.png";
 constexpr char background_sound_path[] = "./assets/sound/BackgroundMusic.ogg";
-
+constexpr char mainpage_img_path[] = "./assets/image/mainpage.png";
 /**
  * @brief Game entry.
  * @details The function processes all allegro events and update the event state to a generic data storage (i.e. DataCenter).
@@ -34,6 +34,7 @@ Game::execute() {
 	bool run = true;
 	while(run) {
 		// process all events here
+		//printf("%lf %lf\n", DC->mouse.x, DC->mouse.y);
 		al_wait_for_event(event_queue, &event);
 		switch(event.type) {
 			case ALLEGRO_EVENT_TIMER: {
@@ -108,39 +109,44 @@ Game::Game() {
  */
 void
 Game::game_init() {
-	DataCenter *DC = DataCenter::get_instance();
-	SoundCenter *SC = SoundCenter::get_instance();
-	ImageCenter *IC = ImageCenter::get_instance();
-	FontCenter *FC = FontCenter::get_instance();
-	// set window icon
-	game_icon = IC->get(game_icon_img_path);
-	al_set_display_icon(display, game_icon);
+    DataCenter *DC = DataCenter::get_instance();
+    SoundCenter *SC = SoundCenter::get_instance();
+    ImageCenter *IC = ImageCenter::get_instance();
+    FontCenter *FC = FontCenter::get_instance();
 
-	// register events to event_queue
+    // Set window icon
+    game_icon = IC->get(game_icon_img_path);
+    al_set_display_icon(display, game_icon);
+
+    // Register events
     al_register_event_source(event_queue, al_get_display_event_source(display));
     al_register_event_source(event_queue, al_get_keyboard_event_source());
     al_register_event_source(event_queue, al_get_mouse_event_source());
     al_register_event_source(event_queue, al_get_timer_event_source(timer));
 
-	// init sound setting
-	SC->init();
+    // Init sound and font settings
+    SC->init();
+    FC->init();
 
-	// init font setting
-	FC->init();
+    // Init UI
+    ui = new UI();
+    ui->init();
 
-	ui = new UI();
-	ui->init();
+    // 加載主頁背景
+    main_page = IC->get(mainpage_img_path);
+    GAME_ASSERT(main_page != nullptr, "Failed to load main page background image.");
 
-	//DC->level->init(); 原遊戲的路徑
+    // Load all possible backgrounds
+    background1 = IC->get(background1_img_path);
+	GAME_ASSERT(background1 != nullptr, "Failed to load background1 image.");
+    // 定義按鈕範圍（例：Start Game 按鈕）
+    start_button = {577, 447, 1027, 561, "Start Game"};
 
-	//DC->hero->init();  //呼叫快龍
-
-	// game start
-	background = IC->get(background_img_path);
-	debug_log("Game state: change to START\n");
-	state = STATE::START;
-	al_start_timer(timer);
+    debug_log("Game state: change to MAIN_MENU\n");
+    state = STATE::MAIN_MENU; // 設置遊戲初始狀態為主頁
+    al_start_timer(timer);
 }
+
 
 /**
  * @brief The function processes all data update.
@@ -156,6 +162,16 @@ Game::game_update() {
 	static ALLEGRO_SAMPLE_INSTANCE *background = nullptr;
 
 	switch(state) {
+		case STATE::MAIN_MENU: { // 主頁邏輯
+            if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
+                if (DC->mouse.x >= start_button.x1 && DC->mouse.x <= start_button.x2 &&
+                    DC->mouse.y >= start_button.y1 && DC->mouse.y <= start_button.y2) {
+                    debug_log("<Game> state: change to START\n");
+                    state = STATE::START; // 切換到遊戲開始狀態
+                }
+            }
+            break;
+        }
 		case STATE::START: {
 			static bool is_played = false;
 			static ALLEGRO_SAMPLE_INSTANCE *instance = nullptr;
@@ -224,43 +240,42 @@ Game::game_update() {
 /**
  * @brief Draw the whole game and objects.
  */
-void
-Game::game_draw() {
-	DataCenter *DC = DataCenter::get_instance();
-	OperationCenter *OC = OperationCenter::get_instance();
-	FontCenter *FC = FontCenter::get_instance();
+void Game::game_draw() {
+    DataCenter *DC = DataCenter::get_instance();
+    FontCenter *FC = FontCenter::get_instance();
 
-	// Flush the screen first.
-	al_clear_to_color(al_map_rgb(100, 100, 100));
-	if(state != STATE::END) {
-		// background
-		al_draw_bitmap(background, 0, 0, 0);
-		// user interface
-		if(state != STATE::START) {
-			//DC->level->draw();
+    al_clear_to_color(al_map_rgb(100, 100, 100));
 
-			//DC->hero->draw();  //畫hero
-			ui->draw();
-			OC->draw();
-		}
-	}
-	switch(state) {
-		case STATE::START: {
-		} case STATE::LEVEL: {
-			break;
-		} case STATE::PAUSE: {
-			// game layout cover
-			al_draw_filled_rectangle(0, 0, DC->window_width, DC->window_height, al_map_rgba(50, 50, 50, 64));
-			al_draw_text(
-				FC->caviar_dreams[FontSize::LARGE], al_map_rgb(255, 255, 255),
-				DC->window_width/2., DC->window_height/2.,
-				ALLEGRO_ALIGN_CENTRE, "GAME PAUSED");
-			break;
-		} case STATE::END: {
-		}
-	}
-	al_flip_display();
+    switch(state) {
+        case STATE::MAIN_MENU: {
+            // 繪製主頁背景
+            al_draw_bitmap(main_page, 0, 0, 0);
+            break;
+        }
+        case STATE::START: {
+            al_draw_bitmap(background1, 0, 0, 0);
+            break;
+        }
+        case STATE::LEVEL: {
+            // 遊戲繪製邏輯
+			al_draw_bitmap(background1, 0, 0, 0); // 使用與 START 相同的背景圖片
+    		debug_log("<Game> Drawing background for LEVEL state.\n");
+    
+            break;
+        }
+        case STATE::PAUSE: {
+            al_draw_filled_rectangle(0, 0, DC->window_width, DC->window_height, al_map_rgba(50, 50, 50, 64));
+            al_draw_text(
+                FC->caviar_dreams[FontSize::LARGE], al_map_rgb(255, 255, 255),
+                DC->window_width / 2., DC->window_height / 2.,
+                ALLEGRO_ALIGN_CENTRE, "GAME PAUSED");
+            break;
+        }
+    }
+
+    al_flip_display();
 }
+
 
 Game::~Game() {
 	al_destroy_display(display);
