@@ -131,9 +131,9 @@ Game::game_init() {
 	ui = new UI();
 	ui->init();
 
-	DC->level->init();
+	//DC->level->init(); 原遊戲的路徑
 
-	DC->hero->init();  //呼叫快龍
+	//DC->hero->init();  //呼叫快龍
 
 	// game start
 	background = IC->get(background_img_path);
@@ -209,11 +209,11 @@ Game::game_update() {
 		ui->update();
 
 		//快龍實作
-		DC->hero->update();
-		if(state != STATE::START) {
-			DC->level->update();
-			OC->update();
-		}
+		//DC->hero->update();
+		// if(state != STATE::START) {
+		// 	DC->level->update();
+		// 	OC->update();
+		// }
 	}
 	// game_update is finished. The states of current frame will be previous states of the next frame.
 	memcpy(DC->prev_key_state, DC->key_state, sizeof(DC->key_state));
@@ -237,9 +237,9 @@ Game::game_draw() {
 		al_draw_bitmap(background, 0, 0, 0);
 		// user interface
 		if(state != STATE::START) {
-			DC->level->draw();
+			//DC->level->draw();
 
-			DC->hero->draw();  //畫hero
+			//DC->hero->draw();  //畫hero
 			ui->draw();
 			OC->draw();
 		}
