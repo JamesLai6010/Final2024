@@ -3,6 +3,7 @@
 
 #include "Props.h"
 #include "../Object.h"
+#include <vector>
 
 class Prop_God: public Object{
     public:
@@ -14,6 +15,8 @@ class Prop_God: public Object{
     private:
         int gen_rate = 10;
         int time_cnt = 0;
+        std::vector<int> Init_x;
+        int idx_x = 0;
 };
 
 #endif 

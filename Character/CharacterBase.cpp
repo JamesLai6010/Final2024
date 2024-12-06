@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include "../shapes/Rectangle.h"
 #include "../data/GIFCenter.h"
+#include <iostream>
 
 void CharacterBase::update_bounding_box() {
     if (current_animation) {
@@ -70,18 +71,26 @@ void CharacterBase::set_key_mapping(int left, int right, int jump, int attack1, 
 
 void CharacterBase::update() {
     DataCenter* DC = DataCenter::get_instance();
+    
+    if (Speed_timer < 0){
+        Speed_timer = 0;
+        speed_bias = 0;
+    }else{
+        Speed_timer -= 1;
+    }std::cout << "Character Speed ";
+    std::cout << speed+speed_bias << std::endl;
 
      // **防止在 SHIELD 狀態下水平移動**    
     if (state != CharacterState::SHIELD) {
         // 水平移動處理（即使在攻擊狀態下仍允許移動）
         if (DC->key_state[key_right]) {
-            shape->update_center_x(shape->center_x() + speed);
+            shape->update_center_x(shape->center_x() + speed + speed_bias);
             is_facing_left = false; // 面向右
             if (!is_attacking && !is_jumping) {
                 set_state(CharacterState::WALK);
             }
         } else if (DC->key_state[key_left]) {
-            shape->update_center_x(shape->center_x() - speed);
+            shape->update_center_x(shape->center_x() - speed - speed_bias);
             is_facing_left = true; // 面向左
             if (!is_attacking && !is_jumping) {
                 set_state(CharacterState::WALK);
@@ -141,6 +150,8 @@ void CharacterBase::update() {
         vertical_velocity = -jump_initial_velocity; // 跳躍初速度（負值表示向上）
         set_state(CharacterState::JUMP);  // 切換到跳躍狀態
     }
+
+    
 }
 
 void CharacterBase::draw() {
@@ -152,4 +163,12 @@ void CharacterBase::draw() {
     int flags = is_facing_left ? ALLEGRO_FLIP_HORIZONTAL : 0;
 
     algif_draw_gif(current_animation, draw_x, draw_y, flags);
+}
+
+void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b){
+    speed_bias = sp_b;
+    HP = std::max(HP, HP+hp);
+    Speed_timer = sp_t;
+    Atk_bias = atk_b;
+    Atk_timer = atk_t;
 }

@@ -8,6 +8,9 @@
 #include "../Hero.h"
 #include "../Character/Character1.h"
 #include "../Character/Character2.h"
+#include "../Props/Props.h"
+#include "../Props/Prop_GOD.h"
+
 // fixed settings
 namespace DataSetting {
 	constexpr double FPS = 60;
@@ -33,6 +36,9 @@ DataCenter::DataCenter() {
 	character1 = new Character1();
 	//character1->init(); // 初始化角色
 	character2 = new Character2();
+
+	prop_god = new Prop_God(100);
+	
 }
 
 DataCenter::~DataCenter() {
@@ -41,6 +47,9 @@ DataCenter::~DataCenter() {
 	delete character1;
 	for(Monster *&m : monsters) {
 		delete m;
+	}
+	for (Prop *&p: props){
+		delete p;
 	}
 	for(Tower *&t : towers) {
 		delete t;

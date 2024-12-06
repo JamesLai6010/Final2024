@@ -7,6 +7,7 @@
 #include "../Hero.h"
 #include "../Props/props.h"
 #include "../Character/Character1.h"
+#include "../Character/Character2.h"
 
 void OperationCenter::update() {
 	// Update monsters.
@@ -21,6 +22,9 @@ void OperationCenter::update() {
 	_update_monster_player();
 	//快龍
 	_update_monster_hero();
+
+	_update_prop();
+	_update_character_porp();
 }
 
 void OperationCenter::_update_monster() {
@@ -33,6 +37,13 @@ void OperationCenter::_update_tower() {
 	std::vector<Tower*> &towers = DataCenter::get_instance()->towers;
 	for(Tower *tower : towers)
 		tower->update();
+}
+
+void OperationCenter::_update_prop(){
+	std::vector<Prop*> &props = DataCenter::get_instance()->props;
+	for (Prop *p : props){
+		p->update();
+	}
 }
 
 void OperationCenter::_update_towerBullet() {
@@ -102,12 +113,15 @@ void OperationCenter::_update_monster_hero()
 	}
 }
 
-void _update_character1_porp(){
+void OperationCenter::_update_character_porp(){
 	DataCenter *DC = DataCenter::get_instance();
 	std::vector<Prop*> &props = DC->props;
 	for (size_t i=0;i < props.size(); i++){
 		if (props[i]->shape->overlap(*(DC->character1->shape))){
 			props[i]->Prop_effect(*(DC->character1));
+		}
+		else if (props[i]->shape->overlap(*(DC->character2->shape))){
+			props[i]->Prop_effect(*(DC->character2));
 		}
 	}
 }
@@ -121,9 +135,14 @@ void OperationCenter::draw() {
 
 void OperationCenter::_draw_prop(){
 	std::vector<Prop*> &props = DataCenter::get_instance()->props;
+	std::vector<Prop*> props_new;
 	for (Prop *p : props){
 		p->draw();
+		if (p->get_fly_dict() != -1){
+			props_new.emplace_back(p);
+		}
 	}
+	props = props_new;
 }
 
 void OperationCenter::_draw_monster() {

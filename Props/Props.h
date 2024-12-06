@@ -4,7 +4,7 @@
 #include "../Object.h"
 #include <allegro5/bitmap.h>
 #include <string>
-#include "../Character/Character1.h"
+#include "../Character/CharacterBase.h"
 
 
 enum class PropsType{
@@ -16,12 +16,13 @@ class Prop : public Object
 {
 public:
 	static Prop *Prop_Create(const Point &p, const Point &target, PropsType Type , double v, double val);
-	void Prop_effect(Character1 &CH1);
+	void Prop_effect(CharacterBase &CH1);
 	Prop(const Point &p, const Point &target, PropsType Type , double v, double val);
 	void update();
 	void draw();
+	double get_fly_dict();
 private:
-
+	double const ground_base = 1000;
 	double vx; // Velocity in x direction.
 	double vy; // Velocity in y direction.
 	double fly_dist;

@@ -33,14 +33,15 @@ public:
 
     // 設定玩家按鍵配置
     void set_key_mapping(int left, int right, int jump, int attack1, int attack2, int attack3, int shield);
-
-protected:
+    void set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b); //  Props effect
+protected:  
     // 狀態與動畫
     CharacterState state = CharacterState::NONE;
     ALGIF_ANIMATION* current_animation = nullptr;
     std::map<CharacterState, std::string> gifPath;
 
     // 角色參數
+    double HP = 1000;
     double speed = 5.0;
     double scale_x = 1.0, scale_y = 1.0;
     bool is_facing_left = false;
@@ -57,6 +58,13 @@ protected:
     double attack_timer = 0.0;
     double attack_duration = 0.5;
     double shield_duration = 0.7;
+
+    // 效果計時器
+    double Hp_timer = 0;
+    double Speed_timer = 0;
+    double speed_bias = 0; // 速度偏移值
+    double Atk_timer = 0; 
+    double Atk_bias = 0;
 
     // 初始位置
     double initial_x = 300;

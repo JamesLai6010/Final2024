@@ -26,9 +26,9 @@ namespace PropSetting{
 
 	};
 	static constexpr char prop_spritesheet_root_path[static_cast<int>(PropsType::PropsTpye_Max)][40] = {
-		"./assets/gif/Healthy_porp.gif",
-		"./assets/gif/Haste_porp.gif",
-		"./assets/gif/Crit_porp.gif"
+		"./assets/gif/Healthy_prop.gif",
+		"./assets/gif/Haste_prop.gif",
+		"./assets/gif/Crit_prop.gif"
 
 	};
 } // namespace PropSetting
@@ -70,6 +70,11 @@ void Prop::update() {
 	double dx = vx / DC->FPS;
 	double dy = vy / DC->FPS;
 	double movement = Point::dist(Point{dx, dy}, Point{0, 0});
+	if (shape->center_y()>= ground_base){ // drop to floor
+		shape->update_center_y(ground_base);
+		fly_dist = 0;
+	}
+
 	if(fly_dist > movement) {
 		shape->update_center_x(shape->center_x() + dx);
 		shape->update_center_y(shape->center_y() + dy);
@@ -91,25 +96,30 @@ Prop::draw() {
 		shape->center_y() - al_get_bitmap_height(icon) / 2, 0); // 左上角
 }
 
-void Prop::Prop_effect(Character1 &CH1){
+void Prop::Prop_effect(CharacterBase &CH){
 	if (fly_dist == -1)return;
 
 	switch (this->type)
 	{
+	//   void set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b); // for 外部設定
 	case PropsType::Healthy:
-		CH1.HP += 200; // wait
+		CH.set_effect_val(val, 0, 0, 0, 0);
 		break;
 	case PropsType::Haste:
-		
-		
-	
+		CH.set_effect_val(0, 100, val, 0, 0);
+		break;
+	case PropsType::Crit:
+		CH.set_effect_val(0, 0, 0, 50, val);
 	default:
 		break;
-
+	}
 	algif_draw_gif(magic.sprite_sheet,
 		shape->center_x() - magic.sprite_sheet->width / 2,
 		shape->center_y() - magic.sprite_sheet->height / 2, 0);
 	fly_dist = -1;
-	}
 	//delete this;
+}
+
+double Prop::get_fly_dict(){
+	return fly_dist;
 }

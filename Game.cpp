@@ -18,6 +18,9 @@
 //角色1
 #include "Character/Character1.h"
 #include "Character/Character2.h"
+// Prop
+#include "Props/Props.h"
+#include "Props/Prop_GOD.h"
 //git testing1
 // fixed settings
 constexpr char game_icon_img_path[] = "./assets/image/game_icon.jpg";
@@ -280,6 +283,7 @@ Game::game_update() {
 			//加入角色
 			DC->character1->update(); // 更新角色邏輯
 			DC->character2->update(); // 更新角色邏輯
+			DC->prop_god->update();
 
 			static bool BGM_played = false;
 			if(!BGM_played) {
@@ -317,6 +321,7 @@ Game::game_update() {
 		DC->player->update();
 		SC->update();
 		ui->update();
+		OC->update();
 
 		//快龍實作
 		//DC->hero->update();
@@ -337,6 +342,7 @@ Game::game_update() {
 void Game::game_draw() {
     DataCenter *DC = DataCenter::get_instance();
     FontCenter *FC = FontCenter::get_instance();
+	OperationCenter *OC = OperationCenter::get_instance();
 
     al_clear_to_color(al_map_rgb(100, 100, 100));
 
@@ -418,6 +424,7 @@ void Game::game_draw() {
 			//畫出角色
             DC->character1->draw();                      // 繪製角色
 			DC->character2->draw();                      // 繪製角色
+			OC->draw();
             break;
         }
         case STATE::PAUSE: {
