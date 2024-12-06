@@ -3,25 +3,28 @@
 #include "../algif5/algif.h"
 #include <stdexcept>
 #include "../shapes/Rectangle.h"
-#include "../data/ImageCenter.h"
+#include "../data/GIFCenter.h"
 
-constexpr char character1_img_path[] = "./assets/image/Character1/Walk.png";
-
+namespace Character1Setting {
+    static constexpr char gif_root_path[] = "./assets/gif/Character1";
+    static constexpr char gif_postfix[][10] = {
+        "Walk", "Run", "Jump", "Attack1", "Attack2", "Attack3", "Stop", "Shield", "Dead"
+    };
+}
 void Character1::update_bounding_box() {
-    if (shape) {
+    if (current_animation) {
         float center_x = shape->center_x();
         float center_y = shape->center_y();
 
-        float new_width = animations[state].frame_width * scale_x;
-        float new_height = animations[state].frame_height * scale_y;
+        float new_width = current_animation->width * scale_x;
+        float new_height = current_animation->height * scale_y;
 
-        // 如果角色翻转，需要调整碰撞箱的位置
-        //float offset_x = is_facing_left ? -new_width / 2 : new_width / 2;
-
-        // 更新碰撞箱
-        shape.reset(new Rectangle(center_x - new_width / 2, center_y - new_height / 2,
-                          center_x + new_width / 2, center_y + new_height / 2));
-
+        shape.reset(new Rectangle(
+            center_x - new_width / 2,
+            center_y - new_height / 2,
+            center_x + new_width / 2,
+            center_y + new_height / 2
+        ));
     }
 }
 
@@ -33,95 +36,139 @@ void Character1::set_scale(double sx, double sy) {
 }
 
 void Character1::init() {
-    
-    ImageCenter *IC = ImageCenter::get_instance();
-    DataCenter *DC = DataCenter::get_instance();
-    // 加載多幀圖片
-    ALLEGRO_BITMAP *sprite_sheet = IC->get(character1_img_path);
-    //GAME_ASSERT(sprite_sheet != nullptr, "Failed to load Walk sprite sheet!");
+    GIFCenter* GIFC = GIFCenter::get_instance();
+    DataCenter* DC = DataCenter::get_instance();
 
-    // 設置動畫幀數
-    animations[Character1State::WALK].sprite_sheet = sprite_sheet;
-    animations[Character1State::WALK].frame_width = 128;  // 單幀寬度
-    animations[Character1State::WALK].frame_height = 128; // 單幀高度
-    animations[Character1State::WALK].num_frames = 8;    // 總幀數
+    // 初始化各模式的 GIF 路徑
+    for (size_t i = 0; i < static_cast<size_t>(Character1State::NONE); ++i) {
+        char buffer[100];
+        sprintf(buffer, "%s/%s.gif",
+                Character1Setting::gif_root_path,
+                Character1Setting::gif_postfix[i]);
+        gifPath[static_cast<Character1State>(i)] = std::string(buffer);
+    }
 
-    // 設置角色初始位置和碰撞框
-    shape.reset(new Rectangle{DC->window_width / 2,
-							  DC->window_height / 2,
-							  DC->window_width / 2 + 128,
-							  DC->window_height / 2 + 128});
+    // 加載初始動畫 (靜止)
+    current_animation = GIFC->get(gifPath[Character1State::STOP]);
 
-    // 更新碰撞箱（初始化時必須同步）
+    float initial_x = DC->window_width / 2;  // 水平位置為畫面中心
+    float initial_y = ground_level;         // 垂直位置為地面高度
+
+    // 初始化角色形狀和位置
+    shape.reset(new Rectangle(
+        initial_x - current_animation->width / 2,  // 左上角 X
+        initial_y - current_animation->height / 2,     // 左上角 Y
+        initial_x + current_animation->width / 2,  // 右下角 X
+        initial_y + current_animation->height / 2    // 右下角 Y
+    ));
+
+    // 同步更新碰撞框
     update_bounding_box();
 }
 
 void Character1::set_state(Character1State new_state) {
     if (state != new_state) {
         state = new_state;
-        frame_index = 0;   // 重置幀索引
-        frame_timer = 0.0; // 重置幀計時器
+        GIFCenter* GIFC = GIFCenter::get_instance();
+
+        // 切換到新狀態的 GIF
+        current_animation = GIFC->get(gifPath[state]);
+        update_bounding_box(); // 更新碰撞箱
     }
 }
 
+
+
 void Character1::update() {
-    DataCenter *DC = DataCenter::get_instance();
-    // 更新角色位置
-    is_moving = false;
-    if (DC->key_state[ALLEGRO_KEY_D]) { // 往右移動
-        shape->update_center_x(shape->center_x() + speed);
-        set_state(Character1State::WALK);
-        is_moving = true;
-        is_facing_left = false; // 面向右
-    } else if (DC->key_state[ALLEGRO_KEY_A]) { // 往左移動
-        shape->update_center_x(shape->center_x() - speed);
-        set_state(Character1State::WALK);
-        is_moving = true;
-        is_facing_left = true;  //面向左
-    }
+    DataCenter* DC = DataCenter::get_instance();
 
-    if (!is_moving) {
-        set_state(Character1State::STOP);
-    }
-
-    // 更新動畫幀
-    if (state == Character1State::WALK) {
-        frame_timer += 1.0 / 60.0; // 假設 FPS = 60
-        if (frame_timer >= frame_duration) {
-            frame_timer -= frame_duration;
-            frame_index = (frame_index + 1) % animations[Character1State::WALK].num_frames;
+    // 攻擊狀態計時
+    if (is_attacking) {
+        attack_timer -= 1.0 / 60.0; // 減少攻擊計時器
+        if (attack_timer <= 0) {
+            is_attacking = false; // 攻擊結束
+            set_state(Character1State::STOP); // 返回停止狀態
         }
     }
 
-    // 更新碰撞箱
-    update_bounding_box();
+    // **防止在 SHIELD 狀態下水平移動**    
+    if (state != Character1State::SHIELD) {
+        // 水平移動處理（即使在攻擊狀態下仍允許移動）
+        if (DC->key_state[ALLEGRO_KEY_D]) {
+            shape->update_center_x(shape->center_x() + speed);
+            is_facing_left = false; // 面向右
+            if (!is_attacking && !is_jumping) {
+                set_state(Character1State::WALK);
+            }
+        } else if (DC->key_state[ALLEGRO_KEY_A]) {
+            shape->update_center_x(shape->center_x() - speed);
+            is_facing_left = true; // 面向左
+            if (!is_attacking && !is_jumping) {
+                set_state(Character1State::WALK);
+            }
+        } else if (!is_attacking && !is_jumping) {
+            set_state(Character1State::STOP); // 停止狀態
+        }
+    }
+    
+
+    // 攻擊和防禦邏輯處理（按鍵對應不同動畫）
+    if (!is_attacking) {
+        if (DC->key_state[ALLEGRO_KEY_F]) {
+            set_state(Character1State::ATTACK1);
+            is_attacking = true;
+            attack_timer = attack_duration; // 設定 ATTACK1 動畫持續時間
+        } else if (DC->key_state[ALLEGRO_KEY_G]) {
+            set_state(Character1State::ATTACK2);
+            is_attacking = true;
+            attack_timer = attack_duration; // 設定 ATTACK2 動畫持續時間
+        } else if (DC->key_state[ALLEGRO_KEY_H]) {
+            set_state(Character1State::ATTACK3);
+            is_attacking = true;
+            attack_timer = attack_duration; // 設定 ATTACK3 動畫持續時間
+        } else if (DC->key_state[ALLEGRO_KEY_J]) {
+            set_state(Character1State::SHIELD);
+            is_attacking = true;
+            attack_timer = shield_duration; // 設定防禦持續時間
+        }
+    }
+    // 處理跳躍邏輯
+    if (is_jumping) {
+        // 更新垂直速度（加入重力影響）
+        vertical_velocity += gravity * (1.0 / 60.0); // 假設 60FPS
+        shape->update_center_y(shape->center_y() + vertical_velocity); // 根據速度更新垂直位置
+
+        // 檢查是否到達地面
+        if (shape->center_y() >= ground_level) {
+            shape->update_center_y(ground_level); // 修正位置到地面
+            is_jumping = false;                  // 停止跳躍狀態
+            vertical_velocity = 0;               // 重置速度
+            set_state(Character1State::STOP);    // 回到停止狀態
+        }
+    }
+
+    // 處理跳躍按鍵
+    if (!is_jumping && DC->key_state[ALLEGRO_KEY_W]) {
+        is_jumping = true;
+        vertical_velocity = -jump_initial_velocity; // 跳躍初速度（負值表示向上）
+        set_state(Character1State::JUMP);  // 切換到跳躍狀態
+    }
 }
 
 
 void Character1::draw() {
-    if (state == Character1State::NONE) return; // 停止時不繪製
+    if (!current_animation) return;
 
-    Animation &anim = animations[Character1State::WALK];
-    int sx = frame_index * anim.frame_width; // 計算當前幀的 X 偏移量
+    float draw_x = shape->center_x() - (current_animation->width * scale_x) / 2;
+    float draw_y = shape->center_y() - (current_animation->height * scale_y) / 2;
 
-    // 計算繪製的目標位置
-    float draw_x = shape->center_x() - (anim.frame_width * scale_x) / 2;
-    float draw_y = shape->center_y() - (anim.frame_height * scale_y) / 2;
-    
-    // 判斷是否需要翻轉圖片
     int flags = is_facing_left ? ALLEGRO_FLIP_HORIZONTAL : 0;
 
-    // 使用縮放繪製
-    al_draw_scaled_bitmap(
-        anim.sprite_sheet,          // 原始圖片
-        sx, 0,                      // 原圖片選取範圍 (左上角 x, y)
-        anim.frame_width,           // 選取範圍的寬度
-        anim.frame_height,          // 選取範圍的高度
-        draw_x,                     // 繪製位置 x
-        draw_y,                     // 繪製位置 y
-        anim.frame_width * scale_x, // 繪製寬度（應用水平縮放）
-        anim.frame_height * scale_y,// 繪製高度（應用垂直縮放）
-        flags);                     // 翻轉參數
+    // 繪製當前幀
+    algif_draw_gif(
+        current_animation,
+        draw_x,
+        draw_y,
+        flags
+    );
 }
-
-

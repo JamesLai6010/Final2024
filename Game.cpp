@@ -137,7 +137,6 @@ Game::game_init() {
 
 	// 加入角色和縮放大小
 	DC->character1->init();
-	DC->character1->set_scale(3.0, 3.0);
 
     // 加載主頁背景
     main_page = IC->get(mainpage_img_path);
