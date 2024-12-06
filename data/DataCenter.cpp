@@ -7,6 +7,8 @@
 #include "../towers/Bullet.h"
 #include "../Hero.h"
 #include "../Character/Character1.h"
+#include "../Props/Props.h"
+#include "../Props/Prop_GOD.h"
 
 // fixed settings
 namespace DataSetting {
@@ -31,6 +33,7 @@ DataCenter::DataCenter() {
 	//hero = new Hero();
 	//新角色
 	character1 = new Character1();
+	prop_god = new Prop_God(10);
 	//character1->init(); // 初始化角色
 }
 
@@ -38,6 +41,7 @@ DataCenter::~DataCenter() {
 	delete player;
 	delete level;
 	delete character1;
+	delete prop_god;
 	for(Monster *&m : monsters) {
 		delete m;
 	}
@@ -46,5 +50,8 @@ DataCenter::~DataCenter() {
 	}
 	for(Bullet *&b : towerBullets) {
 		delete b;
+	}
+	for (Prop *&p : props){
+		delete p;
 	}
 }

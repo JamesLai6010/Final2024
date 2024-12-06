@@ -5,6 +5,8 @@
 #include "../towers/Bullet.h"
 #include "../Player.h"
 #include "../Hero.h"
+#include "../Props/props.h"
+#include "../Character/Character1.h"
 
 void OperationCenter::update() {
 	// Update monsters.
@@ -100,10 +102,28 @@ void OperationCenter::_update_monster_hero()
 	}
 }
 
+void _update_character1_porp(){
+	DataCenter *DC = DataCenter::get_instance();
+	std::vector<Prop*> &props = DC->props;
+	for (size_t i=0;i < props.size(); i++){
+		if (props[i]->shape->overlap(*(DC->character1->shape))){
+			props[i]->Prop_effect(*(DC->character1));
+		}
+	}
+}
+
 void OperationCenter::draw() {
 	_draw_monster();
 	_draw_tower();
 	_draw_towerBullet();
+	_draw_prop();
+}
+
+void OperationCenter::_draw_prop(){
+	std::vector<Prop*> &props = DataCenter::get_instance()->props;
+	for (Prop *p : props){
+		p->draw();
+	}
 }
 
 void OperationCenter::_draw_monster() {
@@ -111,6 +131,7 @@ void OperationCenter::_draw_monster() {
 	for(Monster *monster : monsters)
 		monster->draw();
 }
+
 
 void OperationCenter::_draw_tower() {
 	std::vector<Tower*> &towers = DataCenter::get_instance()->towers;

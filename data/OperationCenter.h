@@ -31,7 +31,9 @@ private:
 	void _update_monster_towerBullet();
 	void _update_monster_player();
 	void _update_monster_hero();
+	void _update_character1_porp();
 private:
+	void _draw_prop();
 	void _draw_monster();
 	void _draw_tower();
 	void _draw_towerBullet();

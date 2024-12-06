@@ -8,6 +8,7 @@
 #include "Player.h"
 #include "Level.h"
 #include "Hero.h"  //快龍實作
+
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
@@ -17,6 +18,8 @@
 #include <cstring>
 //角色1
 #include "Character/Character1.h"
+#include "Props/props.h"
+#include "Props/Prop_GOD.h"
 
 //git testing1
 // fixed settings
@@ -137,6 +140,7 @@ Game::game_init() {
 
 	// 加入角色和縮放大小
 	DC->character1->init();
+	
 
     // 加載主頁背景
     main_page = IC->get(mainpage_img_path);
@@ -195,6 +199,7 @@ Game::game_update() {
 		} case STATE::LEVEL: {    //遊戲進行中的地方
 			//加入角色
 			DC->character1->update(); // 更新角色邏輯
+			DC->prop_god->update();
 
 			static bool BGM_played = false;
 			if(!BGM_played) {

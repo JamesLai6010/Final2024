@@ -29,6 +29,8 @@ public:
     //放大縮小圖片
     void set_scale(double sx, double sy);
     
+    double HP = 1000;
+
 private:
     Character1State state = Character1State::NONE; // 當前狀態
     double speed = 5.0;   // 角色移動速度
@@ -48,6 +50,8 @@ private:
     double vertical_velocity = 0.0;  // 垂直速度（單位像素/秒）
     double jump_initial_velocity = 15.0; // 跳躍初速度（單位像素/秒）
     double ground_level = 600;        // 假設地面的位置（單位像素）
+
+    
 
     std::map<Character1State, std::string> gifPath; // 各模式的 GIF 路徑
     ALGIF_ANIMATION* current_animation = nullptr;   // 當前的動畫
