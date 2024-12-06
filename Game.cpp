@@ -15,6 +15,9 @@
 #include <allegro5/allegro_acodec.h>
 #include <vector>
 #include <cstring>
+//角色1
+#include "Character/Character1.h"
+
 //git testing1
 // fixed settings
 constexpr char game_icon_img_path[] = "./assets/image/game_icon.jpg";
@@ -132,6 +135,10 @@ Game::game_init() {
     ui = new UI();
     ui->init();
 
+	// 加入角色和縮放大小
+	DC->character1->init();
+	DC->character1->set_scale(3.0, 3.0);
+
     // 加載主頁背景
     main_page = IC->get(mainpage_img_path);
     GAME_ASSERT(main_page != nullptr, "Failed to load main page background image.");
@@ -186,7 +193,10 @@ Game::game_update() {
 				state = STATE::LEVEL;
 			}
 			break;
-		} case STATE::LEVEL: {
+		} case STATE::LEVEL: {    //遊戲進行中的地方
+			//加入角色
+			DC->character1->update(); // 更新角色邏輯
+
 			static bool BGM_played = false;
 			if(!BGM_played) {
 				background = SC->play(background_sound_path, ALLEGRO_PLAYMODE_LOOP);
@@ -259,8 +269,9 @@ void Game::game_draw() {
         case STATE::LEVEL: {
             // 遊戲繪製邏輯
 			al_draw_bitmap(background1, 0, 0, 0); // 使用與 START 相同的背景圖片
-    		debug_log("<Game> Drawing background for LEVEL state.\n");
-    
+    		//debug_log("<Game> Drawing background for LEVEL state.\n");
+			//畫出角色
+            DC->character1->draw();                      // 繪製角色
             break;
         }
         case STATE::PAUSE: {

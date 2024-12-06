@@ -13,6 +13,7 @@ class Monster;
 class Tower;
 class Bullet;
 class Hero;
+class Character1;
 /**
  * @brief Stores generic global data and relatively small data structures.
  * @details The globally used data such as FPS (frames per second), windows size, game region, and states of input devices (mouse and keyboard).
@@ -94,6 +95,9 @@ public:
 	std::vector<Bullet*> towerBullets;
 	//快龍實作
 	Hero *hero;
+
+	// 角色實作
+    Character1 *character1; // 使用新的角色類別
 private:
 	DataCenter();
 };

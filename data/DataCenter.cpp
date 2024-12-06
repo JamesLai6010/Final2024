@@ -6,6 +6,7 @@
 #include "../towers/Tower.h"
 #include "../towers/Bullet.h"
 #include "../Hero.h"
+#include "../Character/Character1.h"
 
 // fixed settings
 namespace DataSetting {
@@ -27,12 +28,16 @@ DataCenter::DataCenter() {
 	memset(prev_mouse_state, false, sizeof(prev_mouse_state));
 	player = new Player();
 	level = new Level();
-	hero = new Hero();
+	//hero = new Hero();
+	//新角色
+	character1 = new Character1();
+	//character1->init(); // 初始化角色
 }
 
 DataCenter::~DataCenter() {
 	delete player;
 	delete level;
+	delete character1;
 	for(Monster *&m : monsters) {
 		delete m;
 	}
