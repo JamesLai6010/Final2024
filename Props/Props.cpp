@@ -75,6 +75,7 @@ void Prop::update() {
 		shape->update_center_y(shape->center_y() + dy * fly_dist / movement);
 		fly_dist = 0;
 	}
+	
 }
 
 void
@@ -86,7 +87,7 @@ Prop::draw() {
 }
 
 void Prop::Prop_effect(Character1 &CH1){
-	
+
 	switch (this->type)
 	{
 	case PropsType::Healthy:
@@ -94,6 +95,7 @@ void Prop::Prop_effect(Character1 &CH1){
 		algif_draw_gif(magic.sprite_sheet,
 		shape->center_x() - magic.sprite_sheet->width / 2,
 		shape->center_y() - magic.sprite_sheet->height / 2, 0);
+		fly_dist = 0;
 		break;
 	
 	default:

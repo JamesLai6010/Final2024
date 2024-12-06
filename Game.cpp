@@ -242,7 +242,7 @@ Game::game_update() {
 		//DC->hero->update();
 		// if(state != STATE::START) {
 		// 	DC->level->update();
-		// 	OC->update();
+		OC->update();
 		// }
 	}
 	// game_update is finished. The states of current frame will be previous states of the next frame.
@@ -257,6 +257,7 @@ Game::game_update() {
 void Game::game_draw() {
     DataCenter *DC = DataCenter::get_instance();
     FontCenter *FC = FontCenter::get_instance();
+	OperationCenter *OC = OperationCenter::get_instance();
 
     al_clear_to_color(al_map_rgb(100, 100, 100));
 
@@ -276,6 +277,7 @@ void Game::game_draw() {
     		//debug_log("<Game> Drawing background for LEVEL state.\n");
 			//畫出角色
             DC->character1->draw();                      // 繪製角色
+			OC->draw();
             break;
         }
         case STATE::PAUSE: {
@@ -285,6 +287,7 @@ void Game::game_draw() {
                 DC->window_width / 2., DC->window_height / 2.,
                 ALLEGRO_ALIGN_CENTRE, "GAME PAUSED");
             break;
+			
         }
     }
 
