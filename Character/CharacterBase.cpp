@@ -168,7 +168,7 @@ void CharacterBase::draw() {
 void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b){
     speed_bias = sp_b;
     HP = std::max(HP, HP+hp);
-    Speed_timer = sp_t;
+    Speed_timer += sp_t;
     Atk_bias = atk_b;
-    Atk_timer = atk_t;
+    Atk_timer += atk_t;
 }
