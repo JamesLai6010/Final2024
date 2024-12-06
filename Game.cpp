@@ -8,7 +8,6 @@
 #include "Player.h"
 #include "Level.h"
 #include "Hero.h"  //快龍實作
-
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
@@ -18,16 +17,26 @@
 #include <cstring>
 //角色1
 #include "Character/Character1.h"
-#include "Props/props.h"
-#include "Props/Prop_GOD.h"
-
+#include "Character/Character2.h"
 //git testing1
 // fixed settings
 constexpr char game_icon_img_path[] = "./assets/image/game_icon.jpg";
 constexpr char game_start_sound_path[] = "./assets/sound/growl.wav";
-constexpr char background1_img_path[] = "./assets/image/background1.png";
+
 constexpr char background_sound_path[] = "./assets/sound/BackgroundMusic.ogg";
 constexpr char mainpage_img_path[] = "./assets/image/mainpage.png";
+constexpr char sceneSelection_img_path[] = "./assets/image/SelectScene.jpg";
+
+constexpr char background1_img_path[] = "./assets/image/background1.png";
+constexpr char background2_img_path[] = "./assets/image/background2.jpg";
+constexpr char background3_img_path[] = "./assets/image/background3.jpg";
+
+constexpr char character1_img_path[] = "./assets/image/character1.png";
+constexpr char character2_img_path[] = "./assets/image/character2.png";
+constexpr char character3_img_path[] = "./assets/image/character3.png";
+constexpr char character4_img_path[] = "./assets/image/character4.png";
+
+constexpr char playbtn_img_path[] = "./assets/image/play_btn.png";
 /**
  * @brief Game entry.
  * @details The function processes all allegro events and update the event state to a generic data storage (i.e. DataCenter).
@@ -113,6 +122,7 @@ Game::Game() {
 /**
  * @brief Initialize all auxiliary resources.
  */
+
 void
 Game::game_init() {
     DataCenter *DC = DataCenter::get_instance();
@@ -140,21 +150,47 @@ Game::game_init() {
 
 	// 加入角色和縮放大小
 	DC->character1->init();
-	
+	DC->character2->init();
 
     // 加載主頁背景
     main_page = IC->get(mainpage_img_path);
-    GAME_ASSERT(main_page != nullptr, "Failed to load main page background image.");
-
+    
+	// 場景選擇畫面
+	sceneSelection = IC->get(sceneSelection_img_path);
+	
     // Load all possible backgrounds
     background1 = IC->get(background1_img_path);
-	GAME_ASSERT(background1 != nullptr, "Failed to load background1 image.");
-    // 定義按鈕範圍（例：Start Game 按鈕）
-    start_button = {577, 447, 1027, 561, "Start Game"};
+	background2 = IC->get(background2_img_path);
+	background3 = IC->get(background3_img_path);
 
+	// 場景圖
+	character1 = IC->get(character1_img_path);
+	character2 = IC->get(character2_img_path);
+	character3 = IC->get(character3_img_path);
+	character4 = IC->get(character4_img_path);
+
+	// player btn in character_selected
+	playbtn = IC->get(playbtn_img_path);
+    
     debug_log("Game state: change to MAIN_MENU\n");
     state = STATE::MAIN_MENU; // 設置遊戲初始狀態為主頁
     al_start_timer(timer);
+
+	// 場景縮圖
+	double mid_y = DC->window_height / 2;
+	double mid_x = DC->window_width / 2;
+	scene_thumbnails.push_back({IC->get("./assets/image/background1_small.jpg"), mid_x - 520 - 160, mid_y - 90, 320, 180, false, 1});
+    scene_thumbnails.push_back({IC->get("./assets/image/background2_small.jpg"), mid_x - 160, mid_y - 90, 320, 180, false, 2});
+    scene_thumbnails.push_back({IC->get("./assets/image/background3_small.jpg"), mid_x - 160 + 520, mid_y - 90, 320, 180, false, 3});
+
+	select_character.push_back({character1, mid_x - 500, mid_y - 430, 300, 430, false, 1, 0});
+	select_character.push_back({character2, mid_x + 200, mid_y - 430, 300, 430, false, 2, 0});
+	select_character.push_back({character3, mid_x - 500, mid_y, 300, 430, false, 3, 0});
+	select_character.push_back({character4, mid_x + 200, mid_y, 300, 430, false, 4, 0});
+
+	// 定義按鈕範圍（例：Start Game 按鈕）
+    start_button = {577, 447, 1027, 561, "Start Game"};
+	play_button = {mid_x - 127, mid_y - 40, mid_x + 127, mid_y + 40, "Play"};
 }
 
 
@@ -176,30 +212,74 @@ Game::game_update() {
             if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
                 if (DC->mouse.x >= start_button.x1 && DC->mouse.x <= start_button.x2 &&
                     DC->mouse.y >= start_button.y1 && DC->mouse.y <= start_button.y2) {
-                    debug_log("<Game> state: change to START\n");
-                    state = STATE::START; // 切換到遊戲開始狀態
+                    debug_log("<Game> state: change to SCENE_SELECTION\n");
+                    state = STATE::SCENE_SELECTION; // 切換狀態
                 }
             }
             break;
         }
-		case STATE::START: {
-			static bool is_played = false;
-			static ALLEGRO_SAMPLE_INSTANCE *instance = nullptr;
-			if(!is_played) {
-				instance = SC->play(game_start_sound_path, ALLEGRO_PLAYMODE_ONCE);
-				DC->level->load_level(1);
-				is_played = true;
-			}
+		case STATE::SCENE_SELECTION: {
+            // 選擇場景
+			// 檢查場景縮圖是否被滑鼠懸停
+    		for (auto &scene : scene_thumbnails) {
+        		// 檢查鼠標是否在該縮圖範圍內
+        		if (DC->mouse.x >= scene.x && DC->mouse.x <= scene.x + scene.width &&
+            		DC->mouse.y >= scene.y && DC->mouse.y <= scene.y + scene.height) {
+            		scene.is_hovered = true;  // 滑鼠懸停
+					//printf("Hovered over scene at (%f, %f)\n", scene.x, scene.y); // 調試輸出
+        		} else {
+            		scene.is_hovered = false; // 滑鼠不懸停
+        		}
 
-			if(!SC->is_playing(instance)) {
-				debug_log("<Game> state: change to LEVEL\n");
-				state = STATE::LEVEL;
-			}
+				if (DC->mouse_state[1] && !DC->prev_mouse_state[1] && scene.is_hovered) { // 左鍵點擊
+					scene_number = scene.number;
+					debug_log("<Game> state: change to CHARACTER_SELECTION, scene is %d\n", scene_number);
+					player_turn = 1;
+                    state = STATE::CHARACTER_SELECTION; // 切換到遊戲開始狀態
+            	}
+    		}
+            
+            break;
+        }
+		case STATE::CHARACTER_SELECTION: {
+			for (auto &character : select_character) {
+        		// 檢查鼠標是否在該縮圖範圍內
+        		if (DC->mouse.x >= character.x && DC->mouse.x <= character.x + character.width &&
+            		DC->mouse.y >= character.y && DC->mouse.y <= character.y + character.height) {
+            		character.is_hovered = true;  // 滑鼠懸停
+					//printf("Hovered over scene at (%f, %f)\n", scene.x, scene.y); // 調試輸出
+        		} else {
+            		character.is_hovered = false; // 滑鼠不懸停
+        		}
+
+				// 當玩家1或玩家2選擇角色時處理
+                if (DC->mouse_state[1] && !DC->prev_mouse_state[1] && character.is_hovered) {
+                    if (player_turn == 1) {
+                        player1_character = character; // 記錄玩家1選擇的角色
+                        debug_log("<Game> Player 1 selected character %d\n", character.number);
+						player_turn = 2;
+                    } else if (player_turn == 2){
+                        player2_character = character; // 記錄玩家2選擇的角色
+                        debug_log("<Game> Player 2 selected character %d\n", character.number);
+						player_turn = 3;
+                    }
+                    // 讓玩家切換，或者繼續進行遊戲
+                }
+
+    		}
+			if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
+                if (DC->mouse.x >= play_button.x1 && DC->mouse.x <= play_button.x2 &&
+                    DC->mouse.y >= play_button.y1 && DC->mouse.y <= play_button.y2) {
+                    debug_log("<Game> state: change to LEVEL\n");
+                    state = STATE::LEVEL; // 還沒寫跳到對應場景
+                }
+            }
 			break;
-		} case STATE::LEVEL: {    //遊戲進行中的地方
+		}
+		case STATE::LEVEL: {    //遊戲進行中的地方
 			//加入角色
 			DC->character1->update(); // 更新角色邏輯
-			DC->prop_god->update();
+			DC->character2->update(); // 更新角色邏輯
 
 			static bool BGM_played = false;
 			if(!BGM_played) {
@@ -212,14 +292,14 @@ Game::game_update() {
 				debug_log("<Game> state: change to PAUSE\n");
 				state = STATE::PAUSE;
 			}
-			if(DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) {
-				debug_log("<Game> state: change to END\n");
-				state = STATE::END;
-			}
-			if(DC->player->HP == 0) {
-				debug_log("<Game> state: change to END\n");
-				state = STATE::END;
-			}
+			// if(DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) {
+			// 	debug_log("<Game> state: change to END\n");
+			// 	state = STATE::END;
+			// }
+			// if(DC->player->HP == 0) {
+			// 	debug_log("<Game> state: change to END\n");
+			// 	state = STATE::END;
+			// }
 			break;
 		} case STATE::PAUSE: {
 			if(DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
@@ -242,7 +322,7 @@ Game::game_update() {
 		//DC->hero->update();
 		// if(state != STATE::START) {
 		// 	DC->level->update();
-		OC->update();
+		// 	OC->update();
 		// }
 	}
 	// game_update is finished. The states of current frame will be previous states of the next frame.
@@ -257,7 +337,6 @@ Game::game_update() {
 void Game::game_draw() {
     DataCenter *DC = DataCenter::get_instance();
     FontCenter *FC = FontCenter::get_instance();
-	OperationCenter *OC = OperationCenter::get_instance();
 
     al_clear_to_color(al_map_rgb(100, 100, 100));
 
@@ -267,17 +346,78 @@ void Game::game_draw() {
             al_draw_bitmap(main_page, 0, 0, 0);
             break;
         }
+		case STATE::SCENE_SELECTION: {
+			al_draw_bitmap(sceneSelection, 0, 0, 0);
+			
+			for (auto &scene : scene_thumbnails) {
+                if (scene.is_hovered) {
+    				// 使用不同顏色的邊框或修改顏色亮度
+					al_draw_filled_rectangle(scene.x-20, scene.y-20, scene.x + scene.width+20, scene.y + scene.height+20, al_map_rgba(255, 255, 255, 128));
+					//printf("tinted");
+    				al_draw_bitmap(scene.thumbnail, scene.x, scene.y, 0);
+				} else {
+    				al_draw_bitmap(scene.thumbnail, scene.x, scene.y, 0);
+				}
+            }
+			
+			break;
+		}
+		case STATE::CHARACTER_SELECTION: {
+			if (scene_number == 1) {
+				al_draw_bitmap(background1, 0, 0, 0);
+			} else if (scene_number == 2) {
+				al_draw_bitmap(background2, 0, 0, 0);
+			} else if (scene_number == 3) {
+				al_draw_bitmap(background3, 0, 0, 0);
+			}
+			
+			// 繪製玩家1選擇的角色高亮
+            for (auto &character : select_character) {
+
+				//選中的高亮留著
+				if (player1_character.number == character.number) 
+					al_draw_filled_rectangle(character.x, character.y, character.x + character.width, character.y + character.height / 2, al_map_rgba(169, 169, 169, 0.8));
+				if (player2_character.number == character.number)
+					al_draw_filled_rectangle(character.x, character.y + character.height / 2, character.x + character.width, character.y + character.height, al_map_rgba(247, 247, 1, 0.8));
+                //選中的高亮留著
+
+				if (character.is_hovered) {
+                    if (player_turn == 1) {
+                        // 玩家1高亮 (白色，角色上半部)
+                        al_draw_filled_rectangle(character.x, character.y, character.x + character.width, character.y + character.height / 2, al_map_rgba(169, 169, 169, 0.8));
+                    } else if (player_turn == 2) {
+                        // 玩家2高亮 (灰色，角色下半部)
+                        al_draw_filled_rectangle(character.x, character.y + character.height / 2, character.x + character.width, character.y + character.height, al_map_rgba(247, 247, 1, 0.8));
+                    }
+                    al_draw_bitmap(character.character, character.x, character.y, 0);
+                } else {
+                    al_draw_bitmap(character.character, character.x, character.y, 0);
+                }
+            }
+
+			if (player_turn == 3) {
+				al_draw_bitmap(playbtn, play_button.x1, play_button.y1, 0);
+			}
+
+			break;
+		}
         case STATE::START: {
             al_draw_bitmap(background1, 0, 0, 0);
             break;
         }
         case STATE::LEVEL: {
             // 遊戲繪製邏輯
-			al_draw_bitmap(background1, 0, 0, 0); // 使用與 START 相同的背景圖片
+			if (scene_number == 1) {
+				al_draw_bitmap(background1, 0, 0, 0);
+			} else if (scene_number == 2) {
+				al_draw_bitmap(background2, 0, 0, 0);
+			} else if (scene_number == 3) {
+				al_draw_bitmap(background3, 0, 0, 0);
+			}
     		//debug_log("<Game> Drawing background for LEVEL state.\n");
 			//畫出角色
             DC->character1->draw();                      // 繪製角色
-			OC->draw();
+			DC->character2->draw();                      // 繪製角色
             break;
         }
         case STATE::PAUSE: {
@@ -287,7 +427,6 @@ void Game::game_draw() {
                 DC->window_width / 2., DC->window_height / 2.,
                 ALLEGRO_ALIGN_CENTRE, "GAME PAUSED");
             break;
-			
         }
     }
 
