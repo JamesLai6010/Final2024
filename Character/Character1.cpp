@@ -1,4 +1,6 @@
+#include "CharacterBase.h"
 #include "Character1.h"
+#include <map>
 
 void Character1::init() {
     // 設定角色 1 的 GIF 路徑

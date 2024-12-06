@@ -21,10 +21,14 @@ Prop::Prop(const Point &p, const Point &target, const std::string &path, double 
 namespace PropSetting{
 	static constexpr char prop_imgs_root_path[static_cast<int>(PropsType::PropsTpye_Max)][50] = {
 		"./assets/image/Prop/2_Icons/Icon_05.png",
+		"./assets/image/Prop/2_Icons/Icon_10.png",
+		"./assets/image/Prop/2_Icons/Icon_06.png"
 
 	};
 	static constexpr char prop_spritesheet_root_path[static_cast<int>(PropsType::PropsTpye_Max)][40] = {
 		"./assets/gif/Healthy_porp.gif",
+		"./assets/gif/Haste_porp.gif",
+		"./assets/gif/Crit_porp.gif"
 
 	};
 } // namespace PropSetting
@@ -80,6 +84,7 @@ void Prop::update() {
 
 void
 Prop::draw() {
+	if (fly_dist == -1)return ;
 	al_draw_bitmap(
 		icon,
 		shape->center_x() - al_get_bitmap_width(icon) / 2,
@@ -87,19 +92,24 @@ Prop::draw() {
 }
 
 void Prop::Prop_effect(Character1 &CH1){
+	if (fly_dist == -1)return;
 
 	switch (this->type)
 	{
 	case PropsType::Healthy:
 		CH1.HP += 200; // wait
-		algif_draw_gif(magic.sprite_sheet,
-		shape->center_x() - magic.sprite_sheet->width / 2,
-		shape->center_y() - magic.sprite_sheet->height / 2, 0);
-		fly_dist = 0;
 		break;
+	case PropsType::Haste:
+		
+		
 	
 	default:
 		break;
+
+	algif_draw_gif(magic.sprite_sheet,
+		shape->center_x() - magic.sprite_sheet->width / 2,
+		shape->center_y() - magic.sprite_sheet->height / 2, 0);
+	fly_dist = -1;
 	}
 	//delete this;
 }
