@@ -14,6 +14,7 @@ class Tower;
 class Bullet;
 class Hero;
 class Character1;
+class Character2;
 /**
  * @brief Stores generic global data and relatively small data structures.
  * @details The globally used data such as FPS (frames per second), windows size, game region, and states of input devices (mouse and keyboard).
@@ -98,6 +99,7 @@ public:
 
 	// 角色實作
     Character1 *character1; // 使用新的角色類別
+	Character2 *character2;
 private:
 	DataCenter();
 };

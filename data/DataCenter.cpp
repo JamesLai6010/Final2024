@@ -7,7 +7,7 @@
 #include "../towers/Bullet.h"
 #include "../Hero.h"
 #include "../Character/Character1.h"
-
+#include "../Character/Character2.h"
 // fixed settings
 namespace DataSetting {
 	constexpr double FPS = 60;
@@ -32,6 +32,7 @@ DataCenter::DataCenter() {
 	//新角色
 	character1 = new Character1();
 	//character1->init(); // 初始化角色
+	character2 = new Character2();
 }
 
 DataCenter::~DataCenter() {
