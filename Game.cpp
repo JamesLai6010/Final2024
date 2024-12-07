@@ -45,6 +45,8 @@ constexpr char character4_img_path[] = "./assets/image/character4.png";
 constexpr char playbtn_img_path[] = "./assets/image/play_btn.png";
 
 constexpr char click_sound_path[] = "./assets/sound/click.mp3";
+constexpr char mainPage_sound_path[] = "./assets/sound/mainPage.mp3";
+constexpr char sceneSelect_sound_path[] = "./assets/sound/sceneSelect.mp3";
 /**
  * @brief Game entry.
  * @details The function processes all allegro events and update the event state to a generic data storage (i.e. DataCenter).
@@ -214,22 +216,37 @@ Game::game_update() {
 	OperationCenter *OC = OperationCenter::get_instance();
 	SoundCenter *SC = SoundCenter::get_instance();
 	static ALLEGRO_SAMPLE_INSTANCE *background = nullptr;
-	
+	static ALLEGRO_SAMPLE_INSTANCE *click = nullptr;
+	static ALLEGRO_SAMPLE_INSTANCE *mainPage = nullptr;
+	static ALLEGRO_SAMPLE_INSTANCE *sceneSelect = nullptr;
 	switch(state) {
 		case STATE::MAIN_MENU: { // 主頁邏輯
             if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
                 if (DC->mouse.x >= start_button.x1 && DC->mouse.x <= start_button.x2 &&
                     DC->mouse.y >= start_button.y1 && DC->mouse.y <= start_button.y2) {
-					SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+					click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                     debug_log("<Game> state: change to SCENE_SELECTION\n");
+					SC->toggle_playing(mainPage);   //把mainPage bgm暫停
                     state = STATE::SCENE_SELECTION; // 切換狀態
                 }
             }
+
+			static bool BGM_played = false;
+			if(!BGM_played) {
+				mainPage = SC->play(mainPage_sound_path, ALLEGRO_PLAYMODE_LOOP);
+				BGM_played = true;
+			}
+
             break;
         }
 		case STATE::SCENE_SELECTION: {
             // 選擇場景
 			// 檢查場景縮圖是否被滑鼠懸停
+			static bool BGM_played = false;
+			if(!BGM_played) {
+				sceneSelect = SC->play(sceneSelect_sound_path, ALLEGRO_PLAYMODE_LOOP);
+				BGM_played = true;
+			}
     		for (auto &scene : scene_thumbnails) {
         		// 檢查鼠標是否在該縮圖範圍內
         		if (DC->mouse.x >= scene.x && DC->mouse.x <= scene.x + scene.width &&
@@ -242,9 +259,10 @@ Game::game_update() {
 
 				if (DC->mouse_state[1] && !DC->prev_mouse_state[1] && scene.is_hovered) { // 左鍵點擊
 					scene_number = scene.number;
-					SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+					click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
 					debug_log("<Game> state: change to CHARACTER_SELECTION, scene is %d\n", scene_number);
 					player_turn = 1;
+					SC->toggle_playing(sceneSelect);   //暫停
                     state = STATE::CHARACTER_SELECTION; // 切換到遊戲開始狀態
             	}
     		}
@@ -252,6 +270,11 @@ Game::game_update() {
             break;
         }
 		case STATE::CHARACTER_SELECTION: {
+			static bool BGM_played = false;
+    		if (!BGM_played) {
+        		SC->toggle_playing(sceneSelect);   //繼續播放
+        		BGM_played = true;
+    		}
 			for (auto &character : select_character) {
         		// 檢查鼠標是否在該縮圖範圍內
         		if (DC->mouse.x >= character.x && DC->mouse.x <= character.x + character.width &&
@@ -265,12 +288,12 @@ Game::game_update() {
 				// 當玩家1或玩家2選擇角色時處理
                 if (DC->mouse_state[1] && !DC->prev_mouse_state[1] && character.is_hovered) {
                     if (player_turn == 1) {
-						SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+						click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                         player1_character = character; // 記錄玩家1選擇的角色
                         debug_log("<Game> Player 1 selected character %d\n", character.number);
 						player_turn = 2;
                     } else if (player_turn == 2){
-						SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+						click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                         player2_character = character; // 記錄玩家2選擇的角色
                         debug_log("<Game> Player 2 selected character %d\n", character.number);
 						player_turn = 3;
@@ -286,7 +309,8 @@ Game::game_update() {
 					//選擇角色就去處理讀入選擇圖片
 					apply_character_selection();
 					//讀入選擇技能
-					SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+					click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+					SC->toggle_playing(sceneSelect);
                     state = STATE::LEVEL; // 還沒寫跳到對應場景
                 }
             }
