@@ -43,6 +43,8 @@ constexpr char character3_img_path[] = "./assets/image/character3.png";
 constexpr char character4_img_path[] = "./assets/image/character4.png";
 
 constexpr char playbtn_img_path[] = "./assets/image/play_btn.png";
+
+constexpr char click_sound_path[] = "./assets/sound/click.mp3";
 /**
  * @brief Game entry.
  * @details The function processes all allegro events and update the event state to a generic data storage (i.e. DataCenter).
@@ -212,12 +214,13 @@ Game::game_update() {
 	OperationCenter *OC = OperationCenter::get_instance();
 	SoundCenter *SC = SoundCenter::get_instance();
 	static ALLEGRO_SAMPLE_INSTANCE *background = nullptr;
-
+	
 	switch(state) {
 		case STATE::MAIN_MENU: { // 主頁邏輯
             if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
                 if (DC->mouse.x >= start_button.x1 && DC->mouse.x <= start_button.x2 &&
                     DC->mouse.y >= start_button.y1 && DC->mouse.y <= start_button.y2) {
+					SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                     debug_log("<Game> state: change to SCENE_SELECTION\n");
                     state = STATE::SCENE_SELECTION; // 切換狀態
                 }
@@ -239,6 +242,7 @@ Game::game_update() {
 
 				if (DC->mouse_state[1] && !DC->prev_mouse_state[1] && scene.is_hovered) { // 左鍵點擊
 					scene_number = scene.number;
+					SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
 					debug_log("<Game> state: change to CHARACTER_SELECTION, scene is %d\n", scene_number);
 					player_turn = 1;
                     state = STATE::CHARACTER_SELECTION; // 切換到遊戲開始狀態
@@ -261,10 +265,12 @@ Game::game_update() {
 				// 當玩家1或玩家2選擇角色時處理
                 if (DC->mouse_state[1] && !DC->prev_mouse_state[1] && character.is_hovered) {
                     if (player_turn == 1) {
+						SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                         player1_character = character; // 記錄玩家1選擇的角色
                         debug_log("<Game> Player 1 selected character %d\n", character.number);
 						player_turn = 2;
                     } else if (player_turn == 2){
+						SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                         player2_character = character; // 記錄玩家2選擇的角色
                         debug_log("<Game> Player 2 selected character %d\n", character.number);
 						player_turn = 3;
@@ -280,6 +286,7 @@ Game::game_update() {
 					//選擇角色就去處理讀入選擇圖片
 					apply_character_selection();
 					//讀入選擇技能
+					SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                     state = STATE::LEVEL; // 還沒寫跳到對應場景
                 }
             }
