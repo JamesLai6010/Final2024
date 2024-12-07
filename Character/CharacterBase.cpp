@@ -39,6 +39,11 @@ void CharacterBase::init() {
         gifPath[static_cast<CharacterState>(i)] = std::string(buffer);
     }
 
+    // 加載狀態動畫
+    //hp_effect_animation = GIFC->get("./assets/gif/Healthy_effect.gif");
+    speed_effect_animation = GIFC->get("./assets/gif/Speed_effect.gif");
+    //atk_effect_animation = GIFC->get("./assets/gif/Crit_effect.gif");
+
     // 加載初始動畫 (靜止)
     current_animation = GIFC->get(gifPath[CharacterState::STOP]);
     shape.reset(new Rectangle(
@@ -167,11 +172,29 @@ void CharacterBase::draw() {
     int flags = is_facing_left ? ALLEGRO_FLIP_HORIZONTAL : 0;
 
     algif_draw_gif(current_animation, draw_x, draw_y, flags);
+
+    if (Speed_timer > 0 && speed_effect_animation) {
+        float effect_x = shape->center_x() - (speed_effect_animation->width * scale_x) / 2;
+        float effect_y = shape->center_y() + (current_animation->height * scale_y) / 2 -(speed_effect_animation->height * scale_y);
+        algif_draw_gif(speed_effect_animation, effect_x, effect_y, 0);
+    }
+
+    if (Atk_timer > 0 && atk_effect_animation) {
+        float effect_x = shape->center_x() - (atk_effect_animation->width * scale_x) / 2;
+        float effect_y = shape->center_y() - (atk_effect_animation->height * scale_y) / 2;
+        algif_draw_gif(atk_effect_animation, effect_x, effect_y, 0);
+    }
+
+    if (Hp_timer > 0 && hp_effect_animation) {
+        float effect_x = shape->center_x() - (hp_effect_animation->width * scale_x) / 2;
+        float effect_y = shape->center_y() - (hp_effect_animation->height * scale_y) / 2;
+        algif_draw_gif(hp_effect_animation, effect_x, effect_y, 0);
+    }
 }
 
 void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b){
     speed_bias = std::max(sp_b, speed_bias);
-    HP = std::min(HP+hp, (double)1000);
+    HP = std::min(HP + hp, (double)1000);
     Speed_timer += sp_t;
     Atk_bias = std::max(Atk_bias, atk_b);
     Atk_timer += atk_t;

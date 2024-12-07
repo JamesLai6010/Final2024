@@ -5,7 +5,6 @@
 #include <map>
 #include "../Object.h"
 #include "../algif5/algif.h"
-#include "../Game.h"
 
 // 通用角色狀態
 enum class CharacterState {
@@ -44,6 +43,10 @@ protected:
     CharacterState state = CharacterState::NONE;
     ALGIF_ANIMATION* current_animation = nullptr;
     std::map<CharacterState, std::string> gifPath;
+
+    ALGIF_ANIMATION* hp_effect_animation = nullptr;    // 血量效果動畫
+    ALGIF_ANIMATION* speed_effect_animation = nullptr; // 速度效果動畫
+    ALGIF_ANIMATION* atk_effect_animation = nullptr;   // 攻擊效果動畫
 
     // 角色參數
     double HP = 1000;
