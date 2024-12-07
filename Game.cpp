@@ -162,6 +162,7 @@ Game::game_init() {
 	DC->character1->init();
 	DC->character2->init();
 
+	DC->background_inf->init();
     // 加載主頁背景
     main_page = IC->get(mainpage_img_path);
     

@@ -1,11 +1,12 @@
 
 #include "GameInformation.h"
 #include "../data/DataCenter.h"
+
 #include "../Character/Character1.h"
 #include "../Character/CharacterBase.h"
 #include "../Character/Character2.h"
 //#include "../algif5/algif.h"
-#include <allegro5/allegro_primitives.h>
+
 
 /*
 class GameINF: public Object{
@@ -24,13 +25,22 @@ class GameINF: public Object{
 };
 */
 
+constexpr char healthBar_img_path[] = "./assets/image/healthBar.png";
+
+void BackgroundINF::init() {
+    ImageCenter *IC = ImageCenter::get_instance();
+    healthBar = IC->get(healthBar_img_path);
+}
+
 BackgroundINF::BackgroundINF(int t){ // min
+    
     Time = t*60;
 
     player1_HP = max_HP;
-    player2_HP =max_HP;
+    player2_HP = max_HP;
     Player1_Rage = 0;
     Player2_Rage = 0;
+
 }
 
 void BackgroundINF::update(){
@@ -61,15 +71,29 @@ void BackgroundINF::draw(){
     
     
     // draw ch1 inf.
-    al_draw_filled_rectangle(0, 30, 0+bar_width, 30 + bar_height, al_map_rgb(0, 0, 0));
-    al_draw_filled_rectangle(0, 30, 0+ch1_health_bar, 30 + bar_height, al_map_rgb(255, 20, 20));
-    al_draw_filled_rectangle(0, 30+bar_height, 0 + rage_bar, 30+bar_height+bar_height, al_map_rgb(128, 128, 128));
-    al_draw_filled_rectangle(0, 30+bar_height, 0 + ch1_rage_bar, 30+bar_height+bar_height, al_map_rgb(20, 20, 255));
+    double ch1_healthBar_center_x = 100 + bar_width / 2.0;
+    double ch1_healthBar_center_y = 30 + bar_height / 2.0;
+    al_draw_filled_rectangle(50-5, 30-5, 50+bar_width+5, 30 + bar_height+5, al_map_rgb(255, 255, 255));
+    al_draw_filled_rectangle(50, 30, 50+ch1_health_bar, 30 + bar_height, al_map_rgb(255, 20, 20));
+    al_draw_filled_rectangle(50-5, 30+bar_height, 50 + rage_bar+5, 30+bar_height+bar_height+10, al_map_rgb(255, 255, 255));
+    al_draw_filled_rectangle(50, 30+bar_height+5, 50 + rage_bar, 30+bar_height+bar_height+5, al_map_rgb(128, 128, 128));
+    al_draw_filled_rectangle(50, 30+bar_height+5, 50 + ch1_rage_bar, 30+bar_height+bar_height+5, al_map_rgb(20, 20, 255));
+    // al_draw_bitmap(healthBar, ch1_healthBar_center_x - 473/2.0,
+    //                 ch1_healthBar_center_y - 45/2.0,
+    //                 0
+    //                 );
     // draw ch2 inf.
-    al_draw_filled_rectangle(1600 - bar_width, 30, 1600, 30 + bar_height, al_map_rgb(0, 0, 0));
-    al_draw_filled_rectangle(1600 - ch2_health_bar, 30, 1600, 30 + bar_height, al_map_rgb(255, 20, 20));
-    al_draw_filled_rectangle(1600 - rage_bar, 30+bar_height, 1600, 30+bar_height+bar_height, al_map_rgb(128, 128, 128));
-    al_draw_filled_rectangle(1600 - ch2_rage_bar, 30+bar_height, 1600, 30+bar_height+bar_height, al_map_rgb(20, 20, 255));
+    double ch2_healthBar_center_x = 1500 - bar_width / 2.0;
+    double ch2_healthBar_center_y = 30 + bar_height / 2.0;
+    al_draw_filled_rectangle(1550 - bar_width-5, 30-5, 1550+5, 30 + bar_height+5, al_map_rgb(255, 255, 255));
+    al_draw_filled_rectangle(1550 - ch2_health_bar, 30, 1550, 30 + bar_height, al_map_rgb(255, 20, 20));
+    al_draw_filled_rectangle(1550 - rage_bar-5, 30+bar_height, 1550+5, 30+bar_height+bar_height+10, al_map_rgb(255, 255, 255));
+    al_draw_filled_rectangle(1550 - rage_bar, 30+bar_height+5, 1550, 30+bar_height+bar_height+5, al_map_rgb(128, 128, 128));
+    al_draw_filled_rectangle(1550 - ch2_rage_bar, 30+bar_height+5, 1550, 30+bar_height+bar_height+5, al_map_rgb(20, 20, 255));
+    // al_draw_bitmap(healthBar, ch2_healthBar_center_x - 473/2.0,
+    //                 ch2_healthBar_center_y - 45/2.0,
+    //                 0
+    //                 );
 
     
 }

@@ -47,6 +47,7 @@ DataCenter::~DataCenter() {
 	delete player;
 	delete level;
 	delete character1;
+	delete character2;
 	delete prop_god;
 	//delete background_inf;
 	for(Monster *&m : monsters) {
