@@ -274,6 +274,9 @@ Game::game_update() {
                 if (DC->mouse.x >= play_button.x1 && DC->mouse.x <= play_button.x2 &&
                     DC->mouse.y >= play_button.y1 && DC->mouse.y <= play_button.y2) {
                     debug_log("<Game> state: change to LEVEL\n");
+					//選擇角色就去處理讀入選擇圖片
+					apply_character_selection();
+					//讀入選擇技能
                     state = STATE::LEVEL; // 還沒寫跳到對應場景
                 }
             }
@@ -441,8 +444,74 @@ void Game::game_draw() {
 }
 
 
+
+
+
 Game::~Game() {
 	al_destroy_display(display);
 	al_destroy_timer(timer);
 	al_destroy_event_queue(event_queue);
+}
+
+
+void Game::apply_character_selection() {
+    DataCenter* DC = DataCenter::get_instance();
+
+    // 玩家1選擇角色
+    if (player1_character.number == 1) {
+        DC->character1->reset_gif_paths({
+            {CharacterState::WALK, "Character1/Walk"},
+            {CharacterState::RUN, "Character1/Run"},
+            {CharacterState::JUMP, "Character1/Jump"},
+            {CharacterState::ATTACK1, "Character1/Attack1"},
+            {CharacterState::ATTACK2, "Character1/Attack2"},
+            {CharacterState::ATTACK3, "Character1/Attack3"},
+            {CharacterState::STOP, "Character1/Stop"},
+            {CharacterState::SHIELD, "Character1/Shield"},
+            {CharacterState::HURT, "Character1/Hurt"},
+            {CharacterState::DEAD, "Character1/Dead"}
+        });
+    } else if (player1_character.number >= 2) {    //之後有3、4
+        DC->character1->reset_gif_paths({
+            {CharacterState::WALK, "Character2/Walk"},
+            {CharacterState::RUN, "Character2/Run"},
+            {CharacterState::JUMP, "Character2/Jump"},
+            {CharacterState::ATTACK1, "Character2/Attack1"},
+            {CharacterState::ATTACK2, "Character2/Attack2"},
+            {CharacterState::ATTACK3, "Character2/Attack3"},
+            {CharacterState::STOP, "Character2/Stop"},
+            {CharacterState::SHIELD, "Character2/Shield"},
+            {CharacterState::HURT, "Character2/Hurt"},
+            {CharacterState::DEAD, "Character2/Dead"}
+        });
+    }
+
+    // 玩家2選擇角色
+    if (player2_character.number == 1) {
+        DC->character2->reset_gif_paths({
+            {CharacterState::WALK, "Character1/Walk"},
+            {CharacterState::RUN, "Character1/Run"},
+            {CharacterState::JUMP, "Character1/Jump"},
+            {CharacterState::ATTACK1, "Character1/Attack1"},
+            {CharacterState::ATTACK2, "Character1/Attack2"},
+            {CharacterState::ATTACK3, "Character1/Attack3"},
+            {CharacterState::STOP, "Character1/Stop"},
+            {CharacterState::SHIELD, "Character1/Shield"},
+            {CharacterState::HURT, "Character1/Hurt"},
+            {CharacterState::DEAD, "Character1/Dead"}
+        });
+    } else if (player2_character.number >= 2) {
+        DC->character2->reset_gif_paths({
+            {CharacterState::WALK, "Character2/Walk"},
+            {CharacterState::RUN, "Character2/Run"},
+            {CharacterState::JUMP, "Character2/Jump"},
+            {CharacterState::ATTACK1, "Character2/Attack1"},
+            {CharacterState::ATTACK2, "Character2/Attack2"},
+            {CharacterState::ATTACK3, "Character2/Attack3"},
+            {CharacterState::STOP, "Character2/Stop"},
+            {CharacterState::SHIELD, "Character2/Shield"},
+            {CharacterState::HURT, "Character2/Hurt"},
+            {CharacterState::DEAD, "Character2/Dead"}
+        });
+    }
 }

@@ -5,6 +5,7 @@
 #include <map>
 #include "../Object.h"
 #include "../algif5/algif.h"
+#include "../Game.h"
 
 // 通用角色狀態
 enum class CharacterState {
@@ -34,6 +35,8 @@ public:
     // 設定玩家按鍵配置
     void set_key_mapping(int left, int right, int jump, int attack1, int attack2, int attack3, int shield);
     void set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b); //  Props effect
+    // 選擇後重設gif
+    void reset_gif_paths(const std::map<CharacterState, std::string>& new_gif_paths); // 重設 GIF 路徑
 protected:  
     // 狀態與動畫
     CharacterState state = CharacterState::NONE;

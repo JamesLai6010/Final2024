@@ -14,6 +14,10 @@ public:
     void game_init();
     bool game_update();
     void game_draw();
+
+    //角色選擇
+    void apply_character_selection();
+
 private:
     enum class STATE {
         MAIN_MENU, // -> START

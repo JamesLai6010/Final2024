@@ -172,3 +172,16 @@ void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double a
     Atk_bias = atk_b;
     Atk_timer += atk_t;
 }
+
+void CharacterBase::reset_gif_paths(const std::map<CharacterState, std::string>& new_gif_paths) {
+    // 格式化並更新 GIF 路徑
+    gifPath.clear();
+    for (const auto& [state, base_path] : new_gif_paths) {
+        gifPath[state] = "./assets/gif/" + base_path + ".gif";
+    }
+    
+    // 重置當前動畫為靜止狀態的 GIF
+    GIFCenter* GIFC = GIFCenter::get_instance();
+    current_animation = GIFC->get(gifPath[CharacterState::STOP]);
+    update_bounding_box();
+}

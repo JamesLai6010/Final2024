@@ -1,7 +1,9 @@
 // Character2.cpp
 #include "Character2.h"
 
+
 void Character2::init() {
+    
     gifPath[CharacterState::WALK] = "Character2/Walk";
     gifPath[CharacterState::ATTACK1] = "Character2/Attack1";
     gifPath[CharacterState::ATTACK2] = "Character2/Attack2";
