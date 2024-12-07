@@ -5,7 +5,8 @@
 #include "../shapes/Circle.h"
 #include "../shapes/Point.h"
 #include <algorithm>
-#include <allegro5/bitmap_draw.h>
+#include "../algif5/algif.h"
+//#include <allegro5/bitmap_draw.h>
 
 /*
 Prop::Prop(const Point &p, const Point &target, const std::string &path, double v, double val) {
@@ -18,6 +19,7 @@ Prop::Prop(const Point &p, const Point &target, const std::string &path, double 
 }
 */
 
+// img size 48*48
 namespace PropSetting{
 	static constexpr char prop_imgs_root_path[static_cast<int>(PropsType::PropsTpye_Max)][50] = {
 		"./assets/image/Prop/2_Icons/Icon_05.png",
@@ -39,7 +41,7 @@ Prop::Prop(const Point &p, const Point &target, PropsType Type ,double v, double
 	ImageCenter *IC = ImageCenter::get_instance();
 	this->icon = IC->get(PropSetting::prop_imgs_root_path[static_cast<int>(Type)]);
 	GIFCenter *GIFC = GIFCenter::get_instance();
-	magic.sprite_sheet = GIFC->get(PropSetting::prop_spritesheet_root_path[static_cast<int>(Type)]);
+	magic = GIFC->get(PropSetting::prop_spritesheet_root_path[static_cast<int>(Type)]);
 	
 	double d = Point::dist(p, target);
 	this->val = val;
@@ -63,7 +65,7 @@ Prop* Prop::Prop_Create(const Point &p, const Point &target, PropsType Type , do
 
 
 void Prop::update() {
-	if(fly_dist == 0){
+	if(fly_dist <= 0){
 		return ;
 	}
 	DataCenter *DC = DataCenter::get_instance();
@@ -89,7 +91,15 @@ void Prop::update() {
 
 void
 Prop::draw() {
-	if (fly_dist == -1)return ;
+	if (fly_dist <= -1 && fly_dist > -20){
+		algif_draw_gif(magic,
+		shape->center_x() - magic->width / 2,
+		shape->center_y() - magic->height / 2, 0);
+		fly_dist--;
+		return ;
+	}else if (fly_dist <= -20){
+		return; 
+	}
 	al_draw_bitmap(
 		icon,
 		shape->center_x() - al_get_bitmap_width(icon) / 2,
@@ -97,7 +107,7 @@ Prop::draw() {
 }
 
 void Prop::Prop_effect(CharacterBase &CH){
-	if (fly_dist == -1)return;
+	if (fly_dist <= -1)return;
 
 	switch (this->type)
 	{
@@ -113,9 +123,7 @@ void Prop::Prop_effect(CharacterBase &CH){
 	default:
 		break;
 	}
-	algif_draw_gif(magic.sprite_sheet,
-		shape->center_x() - magic.sprite_sheet->width / 2,
-		shape->center_y() - magic.sprite_sheet->height / 2, 0);
+	
 	fly_dist = -1;
 	//delete this;
 }

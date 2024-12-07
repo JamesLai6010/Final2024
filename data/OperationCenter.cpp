@@ -138,8 +138,10 @@ void OperationCenter::_draw_prop(){
 	std::vector<Prop*> props_new;
 	for (Prop *p : props){
 		p->draw();
-		if (p->get_fly_dict() != -1){
+		if (p->get_fly_dict() > -20){
 			props_new.emplace_back(p);
+		}else{ // check this 
+			//delete p;
 		}
 	}
 	props = props_new;

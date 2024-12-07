@@ -21,6 +21,9 @@
 // Prop
 #include "Props/Props.h"
 #include "Props/Prop_GOD.h"
+// background inf
+#include "Background/GameInformation.h"
+
 //git testing1
 // fixed settings
 constexpr char game_icon_img_path[] = "./assets/image/game_icon.jpg";
@@ -287,7 +290,7 @@ Game::game_update() {
 			DC->character1->update(); // 更新角色邏輯
 			DC->character2->update(); // 更新角色邏輯
 			DC->prop_god->update();
-
+			DC->background_inf->update();
 			static bool BGM_played = false;
 			if(!BGM_played) {
 				background = SC->play(background_sound_path, ALLEGRO_PLAYMODE_LOOP);
@@ -427,6 +430,7 @@ void Game::game_draw() {
 			//畫出角色
             DC->character1->draw();                      // 繪製角色
 			DC->character2->draw();                      // 繪製角色
+			DC->background_inf->draw();
 			OC->draw();
             break;
         }

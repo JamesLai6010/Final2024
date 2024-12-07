@@ -8,6 +8,7 @@
 #include <allegro5/mouse.h>
 #include "../shapes/Point.h"
 
+
 class Player;
 class Level;
 class Monster;
@@ -18,6 +19,7 @@ class Character1;
 class Character2;
 class Prop_God;
 class Prop;
+class BackgroundINF;
 /**
  * @brief Stores generic global data and relatively small data structures.
  * @details The globally used data such as FPS (frames per second), windows size, game region, and states of input devices (mouse and keyboard).
@@ -106,6 +108,9 @@ public:
 
 	// Prop
 	Prop_God *prop_god;
+
+	// BackGround inf
+	BackgroundINF *background_inf;
 
 	std::vector<Prop*> props;
 private:

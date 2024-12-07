@@ -77,8 +77,7 @@ void CharacterBase::update() {
         speed_bias = 0;
     }else{
         Speed_timer -= 1;
-    }std::cout << "Character Speed ";
-    std::cout << speed+speed_bias << std::endl;
+    }
 
      // **防止在 SHIELD 狀態下水平移動**    
     if (state != CharacterState::SHIELD) {
@@ -114,20 +113,25 @@ void CharacterBase::update() {
             set_state(CharacterState::ATTACK1);
             is_attacking = true;
             attack_timer = attack_duration; // 設定 ATTACK1 動畫持續時間
+            Rage += 5; // 若打到應該會加更多
         } else if (DC->key_state[key_attack2]) {
             set_state(CharacterState::ATTACK2);
             is_attacking = true;
             attack_timer = attack_duration; // 設定 ATTACK2 動畫持續時間
+            Rage += 5;
         } else if (DC->key_state[key_attack3]) {
             set_state(CharacterState::ATTACK3);
             is_attacking = true;
             attack_timer = attack_duration; // 設定 ATTACK3 動畫持續時間
+            Rage += 5;
         } else if (DC->key_state[key_shield]) {
             set_state(CharacterState::SHIELD);
             is_attacking = true;
             attack_timer = shield_duration; // 設定防禦持續時間
+            Rage += 10; // 同樣，若成功阻擋加更多
         }
     }
+    Rage = std::min(Rage, (double)100);
 
     // 處理跳躍邏輯
     if (is_jumping) {
@@ -166,10 +170,10 @@ void CharacterBase::draw() {
 }
 
 void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b){
-    speed_bias = sp_b;
-    HP = std::max(HP, HP+hp);
+    speed_bias = std::max(sp_b, speed_bias);
+    HP = std::min(HP+hp, (double)1000);
     Speed_timer += sp_t;
-    Atk_bias = atk_b;
+    Atk_bias = std::max(Atk_bias, atk_b);
     Atk_timer += atk_t;
 }
 
@@ -185,3 +189,7 @@ void CharacterBase::reset_gif_paths(const std::map<CharacterState, std::string>&
     current_animation = GIFC->get(gifPath[CharacterState::STOP]);
     update_bounding_box();
 }
+
+double CharacterBase::_get_HP()const{return HP;}
+double CharacterBase::_get_Rage() const {return Rage;}
+

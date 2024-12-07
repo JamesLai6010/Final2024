@@ -38,7 +38,7 @@ private:
         int num_frames;               // 幀數
     };
 	PropsType type;
-    Animation magic; // 所有動畫 精靈圖
+    ALGIF_ANIMATION* magic; // 所有動畫 精靈圖
 	// time var.
 };
 

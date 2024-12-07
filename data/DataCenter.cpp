@@ -10,6 +10,7 @@
 #include "../Character/Character2.h"
 #include "../Props/Props.h"
 #include "../Props/Prop_GOD.h"
+#include "../Background/GameInformation.h"
 
 // fixed settings
 namespace DataSetting {
@@ -39,12 +40,15 @@ DataCenter::DataCenter() {
 
 	prop_god = new Prop_God(100);
 	
+	background_inf = new BackgroundINF(3);
 }
 
 DataCenter::~DataCenter() {
 	delete player;
 	delete level;
 	delete character1;
+	delete prop_god;
+	//delete background_inf;
 	for(Monster *&m : monsters) {
 		delete m;
 	}

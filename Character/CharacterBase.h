@@ -37,6 +37,8 @@ public:
     void set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b); //  Props effect
     // 選擇後重設gif
     void reset_gif_paths(const std::map<CharacterState, std::string>& new_gif_paths); // 重設 GIF 路徑
+    double _get_HP() const;
+    double _get_Rage() const;
 protected:  
     // 狀態與動畫
     CharacterState state = CharacterState::NONE;
@@ -45,6 +47,7 @@ protected:
 
     // 角色參數
     double HP = 1000;
+    double Rage = 0; // 怒氣值，觸發大招
     double speed = 5.0;
     double scale_x = 1.0, scale_y = 1.0;
     bool is_facing_left = false;
