@@ -459,9 +459,16 @@ void Game::game_draw() {
 				al_draw_bitmap(background3, 0, 0, 0);
 			}
     		//debug_log("<Game> Drawing background for LEVEL state.\n");
-			//畫出角色
-            DC->character1->draw();                      // 繪製角色
-			DC->character2->draw();                      // 繪製角色
+			//畫出角色，攻擊者在前
+			if (DC->character1->get_state() == CharacterState::ATTACK1 ||
+				DC->character1->get_state() == CharacterState::ATTACK2 ||
+				DC->character1->get_state() == CharacterState::ATTACK3) {
+					DC->character2->draw();		//2在後
+					DC->character1->draw();		//1在前
+				} else {
+					DC->character1->draw();		//1在後
+					DC->character2->draw();		//2在前
+				}
 			DC->background_inf->draw();
 			OC->draw();
             break;

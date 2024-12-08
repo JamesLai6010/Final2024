@@ -32,6 +32,9 @@ public:
     virtual void draw();
     void set_state(CharacterState new_state);
     void set_scale(double sx, double sy);
+    CharacterState get_state() {
+        return state;
+    }
 
     // 設定玩家按鍵配置
     void set_key_mapping(int left, int right, int jump, int attack1, int attack2, int attack3, int shield);
