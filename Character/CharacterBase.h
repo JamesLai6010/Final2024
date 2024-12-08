@@ -22,6 +22,7 @@ enum class CharacterState {
     NONE
 };
 
+
 // 角色基類
 class CharacterBase : public Object {
 public:
@@ -37,9 +38,24 @@ public:
     void set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b); //  Props effect
     // 選擇後重設gif
     void reset_gif_paths(const std::map<CharacterState, std::string>& new_gif_paths); // 重設 GIF 路徑
+
+    // get character information
     double _get_HP() const;
     double _get_Rage() const;
+    CharacterState _get_state();
+    bool _get_dir();
+    double _get_ATKtimer()const;
+
+    // set character val
+    double _set_HP(double hp);
+    double _set_Rage(double rage);
+
+    // attack oppent, set their val
+    void attack_opponent(CharacterBase &opp);
+
 protected:  
+
+
     // 狀態與動畫
     CharacterState state = CharacterState::NONE;
     ALGIF_ANIMATION* current_animation = nullptr;
@@ -57,6 +73,11 @@ protected:
     bool is_facing_left = false;
     bool is_attacking = false;
     bool is_jumping = false;
+
+    // 搭載的符文參數
+    double shield_val = 0;
+    double Rage_bias = 0;
+    double ATK_percnt = 0;
 
     // 跳躍參數
     double gravity = 30.0;
@@ -85,6 +106,9 @@ protected:
 
     // 碰撞箱
     void update_bounding_box();
+
+    
+
 };
 
 #endif

@@ -5,25 +5,10 @@
 #include "../Character/Character1.h"
 #include "../Character/CharacterBase.h"
 #include "../Character/Character2.h"
+#include <random>
 //#include "../algif5/algif.h"
 
 
-/*
-class GameINF: public Object{
-    public:
-    GameINF(int); // 設定每回合的時間
-    void draw(); // 0
-    void update(); // gen
-
-
-    private:
-        double player1_HP;
-        double player2_HP;
-        double Player1_Rage;
-        double Player2_Rage;
-        int Time = 0;
-};
-*/
 
 constexpr char heart_gif_path[] = "./assets/gif/heart.gif";
 constexpr char bolt_img_path[] = "./assets/image/bolt.png";
@@ -43,6 +28,13 @@ BackgroundINF::BackgroundINF(int t){ // min
     player2_HP = max_HP;
     Player1_Rage = 0;
     Player2_Rage = 0;
+    std::random_device rd; // 真正隨機種子（硬體支持）
+    std::default_random_engine engine(rd());
+    std::uniform_int_distribution<int> dist(1, 10000); // 範圍 [1, 100]
+    for (int i=0;i<10000;i++){
+        Random_Num.push_back(dist(engine));
+    }
+    rand_idx = 0;
 
 }
 
@@ -102,3 +94,9 @@ void BackgroundINF::draw(){
 		shape->center_x() - al_get_bitmap_width(icon) / 2,
 		shape->center_y() - al_get_bitmap_height(icon) / 2, 0); // 左上角
 */
+
+int BackgroundINF::_get_random_num(){
+    int x = Random_Num[rand_idx];
+    rand_idx = (rand_idx+1) % Random_Num.size();
+    return x;
+}

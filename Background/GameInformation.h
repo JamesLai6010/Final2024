@@ -7,6 +7,7 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include "../algif5/algif.h"
+#include <vector> 
 
 class BackgroundINF: public Object{
     public:
@@ -14,6 +15,8 @@ class BackgroundINF: public Object{
     void draw(); // 0
     void update(); // gen
     void init();
+    int _get_random_num();
+
 
 
     private:
@@ -30,6 +33,10 @@ class BackgroundINF: public Object{
 
         ALLEGRO_BITMAP *bolt;
         ALGIF_ANIMATION *heart;
+
+        std::vector<int> Random_Num;
+        int rand_idx;
+
 };
 
 #endif 

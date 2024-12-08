@@ -1,5 +1,6 @@
 #include "OperationCenter.h"
 #include "DataCenter.h"
+#include "../Background/GameInformation.h"
 #include "../monsters/Monster.h"
 #include "../towers/Tower.h"
 #include "../towers/Bullet.h"
@@ -8,23 +9,28 @@
 #include "../Props/props.h"
 #include "../Character/Character1.h"
 #include "../Character/Character2.h"
+#include "../Character/CharacterBase.h"
+#include <iostream>
 
 void OperationCenter::update() {
 	// Update monsters.
-	_update_monster();
+	//_update_monster();
 	// Update towers.
-	_update_tower();
+	//_update_tower();
 	// Update tower bullets.
-	_update_towerBullet();
+	//_update_towerBullet();
 	// If any bullet overlaps with any monster, we delete the bullet, reduce the HP of the monster, and delete the monster if necessary.
-	_update_monster_towerBullet();
+	//_update_monster_towerBullet();
 	// If any monster reaches the end, hurt the player and delete the monster.
-	_update_monster_player();
+	//_update_monster_player();
 	//快龍
-	_update_monster_hero();
+	//_update_monster_hero();
+
+	_update_character12();
 
 	_update_prop();
 	_update_character_porp();
+
 }
 
 void OperationCenter::_update_monster() {
@@ -164,4 +170,62 @@ void OperationCenter::_draw_towerBullet() {
 	std::vector<Bullet*> &towerBullets = DataCenter::get_instance()->towerBullets;
 	for(Bullet *towerBullet : towerBullets)
 		towerBullet->draw();
+}
+
+
+void OperationCenter::_update_character12(){
+	
+	DataCenter *DC = DataCenter::get_instance();
+	CharacterBase &CH1 = *(DC->character1);
+	CharacterBase &CH2 = *(DC->character2);
+
+	// first check touch
+	if (!(CH1.shape->overlap(*(DC->character2->shape)))){
+		return;
+	}
+	bool ch1_isAttack = (CH1._get_state() == CharacterState::ATTACK1 || CH1._get_state() == CharacterState::ATTACK2 || CH1._get_state() == CharacterState::ATTACK3);
+	bool ch2_isAttack = (CH2._get_state() == CharacterState::ATTACK1 || CH2._get_state() == CharacterState::ATTACK2 || CH2._get_state() == CharacterState::ATTACK3);
+	if (!(ch1_isAttack || ch2_isAttack)){return;}
+	
+	// 檢查方向使否對
+	if (!((CH1._get_dir() == true && CH2._get_dir() == false)||(CH1._get_dir() == false && CH2._get_dir() == true))){
+		return;
+	}
+	// 檢查距離對不對
+	if ((CH1._get_dir() == true && CH2._get_dir() == false)){
+		if (!(CH1.shape->center_x() >= CH2.shape->center_x()))return;
+	}else{
+		if (!(CH1.shape->center_x() <= CH2.shape->center_x()))return;
+	}
+	
+	if (ch1_isAttack && ch2_isAttack){
+		int x = (*DC->background_inf)._get_random_num();
+		if (x%2){ // ch1_isAttack;
+			CH2.set_state(CharacterState::HURT);
+			CH1.attack_opponent(CH2);
+		}else{
+			CH1.set_state(CharacterState::HURT);
+			CH2.attack_opponent(CH1);
+		}
+	}else if (ch1_isAttack){
+		//std::cout << "CH1 timer: "<< CH1._get_ATKtimer() << std::endl;
+		if (CH2._get_state() == CharacterState::HURT || CH1._get_ATKtimer() - 0.5 != 0){
+			std::cout << "HIT1" << std::endl;
+			return;
+		}else{
+			CH1.attack_opponent(CH2);
+			CH2.set_state(CharacterState::HURT);
+		}
+	}else if (ch2_isAttack){
+		//std::cout << "CH2 timer: "<< CH2._get_ATKtimer() << std::endl;
+		if (CH1._get_state() == CharacterState::HURT || CH2._get_ATKtimer() - 0.5 != 0){
+			std::cout << "HIT2" << std::endl;
+			return;
+		}else{
+			CH2.attack_opponent(CH1);
+			CH1.set_state(CharacterState::HURT);
+		}
+	}
+
+	
 }

@@ -46,19 +46,19 @@ void Prop_God::update(){
     idx_x %= Init_x.size();
     switch(init_x % 3){
         case 0:
-            DC->props.emplace_back(Prop::Prop_Create(Point{init_x, 200}, Point{init_x , 600}, PropsType::Healthy, 50, 200));
+            DC->props.emplace_back(Prop::Prop_Create(Point{init_x, -200}, Point{init_x , 600}, PropsType::Healthy, 50, 200));
             break;
          case 1:
-            DC->props.emplace_back(Prop::Prop_Create(Point{init_x, 200}, Point{init_x , 600}, PropsType::Haste, 50, 10));
+            DC->props.emplace_back(Prop::Prop_Create(Point{init_x, -200}, Point{init_x , 600}, PropsType::Haste, 50, 10));
             break;
         case 2:
-            DC->props.emplace_back(Prop::Prop_Create(Point{init_x, 200}, Point{init_x , 600}, PropsType::Crit, 50, 30));
+            DC->props.emplace_back(Prop::Prop_Create(Point{init_x, -200}, Point{init_x , 600}, PropsType::Crit, 50, 30));
             break;
     }
     // static Prop *Prop_Create(const Point &p, const Point &target, PropsType Type , double v, double val);
     
     
     //assert("props vector size: ",DC->props.size());
-    std::cout << "Prop vector size: " << DC->props.size() <<"\n";
+    //std::cout << "Prop vector size: " << DC->props.size() <<"\n";
     return;
 }

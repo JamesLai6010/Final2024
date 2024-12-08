@@ -175,7 +175,7 @@ void CharacterBase::draw() {
 
     //畫bound_box
     al_draw_rectangle(draw_x, draw_y, draw_x+current_animation->width, draw_y+current_animation->height, al_map_rgb(255,255,255), 3);
-
+    // 藥水效果動畫
     if (Speed_timer > 0 && speed_effect_animation) {
         float effect_x = shape->center_x() - (speed_effect_animation->width * scale_x) / 2;
         float effect_y = shape->center_y() + (current_animation->height * scale_y) / 2 -(speed_effect_animation->height * scale_y);
@@ -194,7 +194,7 @@ void CharacterBase::draw() {
         algif_draw_gif(hp_effect_animation, effect_x, effect_y, 0);
     }
 }
-
+// 設定藥水效果
 void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b){
     speed_bias = std::max(sp_b, speed_bias);
     HP = std::min(HP + hp, (double)1000);
@@ -202,7 +202,7 @@ void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double a
     Atk_bias = std::max(Atk_bias, atk_b);
     Atk_timer += atk_t;
 }
-
+// 選角後的更新路徑
 void CharacterBase::reset_gif_paths(const std::map<CharacterState, std::string>& new_gif_paths) {
     // 格式化並更新 GIF 路徑
     gifPath.clear();
@@ -218,4 +218,27 @@ void CharacterBase::reset_gif_paths(const std::map<CharacterState, std::string>&
 
 double CharacterBase::_get_HP()const{return HP;}
 double CharacterBase::_get_Rage() const {return Rage;}
+
+CharacterState CharacterBase::_get_state(){
+    return state;
+}
+bool CharacterBase::_get_dir(){
+    return is_facing_left;
+}
+double CharacterBase::_get_ATKtimer()const{
+    return attack_timer;
+}
+
+double CharacterBase::_set_HP(double hp){
+    HP += hp;
+}
+double CharacterBase::_set_Rage(double rage){
+    Rage += rage;
+}
+
+void CharacterBase::attack_opponent(CharacterBase &opp){
+    opp._set_HP(-40);
+    opp._set_Rage(15);
+    std::cout << "opp Hp: " << opp.HP  << " ,Rage: " << opp.Rage <<std::endl;
+}
 
