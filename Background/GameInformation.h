@@ -28,7 +28,8 @@ class BackgroundINF: public Object{
         
         double max_HP = 1000;
 
-        ALLEGRO_BITMAP *healthBar;
+        ALLEGRO_BITMAP *bolt;
+        ALGIF_ANIMATION *heart;
 };
 
 #endif 

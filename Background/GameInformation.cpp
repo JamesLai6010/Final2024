@@ -1,7 +1,7 @@
 
 #include "GameInformation.h"
 #include "../data/DataCenter.h"
-
+#include "../data/GIFCenter.h"
 #include "../Character/Character1.h"
 #include "../Character/CharacterBase.h"
 #include "../Character/Character2.h"
@@ -25,11 +25,14 @@ class GameINF: public Object{
 };
 */
 
-constexpr char healthBar_img_path[] = "./assets/image/healthBar.png";
+constexpr char heart_gif_path[] = "./assets/gif/heart.gif";
+constexpr char bolt_img_path[] = "./assets/image/bolt.png";
 
 void BackgroundINF::init() {
     ImageCenter *IC = ImageCenter::get_instance();
-    healthBar = IC->get(healthBar_img_path);
+    GIFCenter *GC = GIFCenter::get_instance();
+    bolt = IC->get(bolt_img_path);
+    heart = GC->get(heart_gif_path);
 }
 
 BackgroundINF::BackgroundINF(int t){ // min
@@ -73,27 +76,23 @@ void BackgroundINF::draw(){
     // draw ch1 inf.
     double ch1_healthBar_center_x = 100 + bar_width / 2.0;
     double ch1_healthBar_center_y = 30 + bar_height / 2.0;
-    al_draw_filled_rectangle(50-5, 30-5, 50+bar_width+5, 30 + bar_height+5, al_map_rgb(255, 255, 255));
-    al_draw_filled_rectangle(50, 30, 50+ch1_health_bar, 30 + bar_height, al_map_rgb(255, 20, 20));
-    al_draw_filled_rectangle(50-5, 30+bar_height, 50 + rage_bar+5, 30+bar_height+bar_height+10, al_map_rgb(255, 255, 255));
-    al_draw_filled_rectangle(50, 30+bar_height+5, 50 + rage_bar, 30+bar_height+bar_height+5, al_map_rgb(128, 128, 128));
-    al_draw_filled_rectangle(50, 30+bar_height+5, 50 + ch1_rage_bar, 30+bar_height+bar_height+5, al_map_rgb(20, 20, 255));
-    // al_draw_bitmap(healthBar, ch1_healthBar_center_x - 473/2.0,
-    //                 ch1_healthBar_center_y - 45/2.0,
-    //                 0
-    //                 );
+    al_draw_filled_rectangle(60-5, 30-5, 60+bar_width+5, 30 + bar_height+5, al_map_rgb(255, 255, 255));
+    al_draw_filled_rectangle(60, 30, 60+ch1_health_bar, 30 + bar_height, al_map_rgb(255, 20, 20));
+    al_draw_filled_rectangle(60-5, 30+bar_height, 60 + rage_bar+5, 30+bar_height+bar_height+10, al_map_rgb(255, 255, 255));
+    al_draw_filled_rectangle(60, 30+bar_height+5, 60 + rage_bar, 30+bar_height+bar_height+5, al_map_rgb(128, 128, 128));
+    al_draw_filled_rectangle(60, 30+bar_height+5, 60 + ch1_rage_bar, 30+bar_height+bar_height+5, al_map_rgb(20, 20, 255));
+    algif_draw_gif(heart, 0, ch1_healthBar_center_y - heart->height / 2, 0);
+    al_draw_bitmap(bolt, 7, ch1_healthBar_center_y * 2 - heart->height / 2, 0);
     // draw ch2 inf.
     double ch2_healthBar_center_x = 1500 - bar_width / 2.0;
     double ch2_healthBar_center_y = 30 + bar_height / 2.0;
-    al_draw_filled_rectangle(1550 - bar_width-5, 30-5, 1550+5, 30 + bar_height+5, al_map_rgb(255, 255, 255));
-    al_draw_filled_rectangle(1550 - ch2_health_bar, 30, 1550, 30 + bar_height, al_map_rgb(255, 20, 20));
-    al_draw_filled_rectangle(1550 - rage_bar-5, 30+bar_height, 1550+5, 30+bar_height+bar_height+10, al_map_rgb(255, 255, 255));
-    al_draw_filled_rectangle(1550 - rage_bar, 30+bar_height+5, 1550, 30+bar_height+bar_height+5, al_map_rgb(128, 128, 128));
-    al_draw_filled_rectangle(1550 - ch2_rage_bar, 30+bar_height+5, 1550, 30+bar_height+bar_height+5, al_map_rgb(20, 20, 255));
-    // al_draw_bitmap(healthBar, ch2_healthBar_center_x - 473/2.0,
-    //                 ch2_healthBar_center_y - 45/2.0,
-    //                 0
-    //                 );
+    al_draw_filled_rectangle(1540 - bar_width-5, 30-5, 1540+5, 30 + bar_height+5, al_map_rgb(255, 255, 255));
+    al_draw_filled_rectangle(1540 - ch2_health_bar, 30, 1540, 30 + bar_height, al_map_rgb(255, 20, 20));
+    al_draw_filled_rectangle(1540 - rage_bar-5, 30+bar_height, 1540+5, 30+bar_height+bar_height+10, al_map_rgb(255, 255, 255));
+    al_draw_filled_rectangle(1540 - rage_bar, 30+bar_height+5, 1540, 30+bar_height+bar_height+5, al_map_rgb(128, 128, 128));
+    al_draw_filled_rectangle(1540 - ch2_rage_bar, 30+bar_height+5, 1540, 30+bar_height+bar_height+5, al_map_rgb(20, 20, 255));
+    algif_draw_gif(heart, 1600-heart->width, ch1_healthBar_center_y - heart->height / 2, 0);
+    al_draw_bitmap(bolt, 1600-heart->width, ch1_healthBar_center_y * 2 - heart->height / 2, 0);
 
     
 }
