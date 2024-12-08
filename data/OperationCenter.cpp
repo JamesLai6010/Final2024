@@ -189,7 +189,13 @@ void OperationCenter::_update_character12(){
 	
 	// 檢查方向使否對
 	if (!((CH1._get_dir() == true && CH2._get_dir() == false)||(CH1._get_dir() == false && CH2._get_dir() == true))){
-		return;
+		if (CH1._get_dir() == true && CH2._get_dir() == true){
+			if (ch1_isAttack && CH1.shape->center_x() < CH2.shape->center_x())ch1_isAttack = 0;
+			if (ch2_isAttack && CH2.shape->center_x() < CH1.shape->center_x())ch2_isAttack = 0;
+		}if (CH1._get_dir() == false && CH2._get_dir() == false){
+			if (ch1_isAttack && CH1.shape->center_x() > CH2.shape->center_x())ch1_isAttack = 0;
+			if (ch2_isAttack && CH2.shape->center_x() > CH1.shape->center_x())ch2_isAttack = 0;
+		}
 	}
 	// 檢查距離對不對
 	if ((CH1._get_dir() == true && CH2._get_dir() == false)){
@@ -210,7 +216,7 @@ void OperationCenter::_update_character12(){
 	}else if (ch1_isAttack){
 		//std::cout << "CH1 timer: "<< CH1._get_ATKtimer() << std::endl;
 		if (CH2._get_state() == CharacterState::HURT || CH1._get_ATKtimer() - 0.5 != 0){
-			std::cout << "HIT1" << std::endl;
+			//std::cout << "HIT1" << std::endl;
 			return;
 		}else{
 			CH1.attack_opponent(CH2);
@@ -219,7 +225,7 @@ void OperationCenter::_update_character12(){
 	}else if (ch2_isAttack){
 		//std::cout << "CH2 timer: "<< CH2._get_ATKtimer() << std::endl;
 		if (CH1._get_state() == CharacterState::HURT || CH2._get_ATKtimer() - 0.5 != 0){
-			std::cout << "HIT2" << std::endl;
+			//std::cout << "HIT2" << std::endl;
 			return;
 		}else{
 			CH2.attack_opponent(CH1);

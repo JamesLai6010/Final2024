@@ -237,8 +237,8 @@ double CharacterBase::_set_Rage(double rage){
 }
 
 void CharacterBase::attack_opponent(CharacterBase &opp){
-    opp._set_HP(-40);
-    opp._set_Rage(15);
+    opp.HP = std::max((double)0, (double)(opp.HP - 40));
+    opp.Rage = std::max((double) 0, (double)(opp.Rage + 15));
     std::cout << "opp Hp: " << opp.HP  << " ,Rage: " << opp.Rage <<std::endl;
 }
 

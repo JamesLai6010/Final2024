@@ -19,11 +19,12 @@ class Prop_God: public Object{
 
 
 Prop_God::Prop_God(int gr): gen_rate{gr} {
-    std::default_random_engine generator( time(NULL) );
-    std::uniform_int_distribution<int> dist(600, 1000); // 範圍 [1, 100]
+    std::random_device rd; // 真正隨機種子（硬體支持）
+    std::default_random_engine engine(rd());
+    std::uniform_int_distribution<int> dist(1, 10000); // 範圍 [1, 100]
     int x;
     for (int i=0;i<1000;i++){
-        x = dist(generator);
+        x = dist(engine);
         Init_x.push_back(x);
     }
 }
