@@ -5,6 +5,7 @@
 #include <map>
 #include "../Object.h"
 #include "../algif5/algif.h"
+#include <allegro5/allegro_primitives.h>
 
 // 通用角色狀態
 enum class CharacterState {
