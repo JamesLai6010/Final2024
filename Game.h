@@ -73,6 +73,13 @@ private:
     SelectCharacter player1_character, player2_character;
     int player_turn = 1;   
 
+    std::string player1_name = ""; // 玩家一名稱
+    std::string player2_name = ""; // 玩家二名稱
+    bool name_input_active = false; // 是否正在輸入名稱
+    int name_input_player = 0; // 當前輸入名稱的玩家 (1 或 2)
+    bool player1_name_done = false; // 玩家一名稱是否完成輸入
+    bool player2_name_done = false; // 玩家一名稱是否完成輸入
+    int typeChar;
     Button start_button; // "Start Game" 按鈕
     Button map_button1; // 場景1 按鈕
     Button map_button2; // 場景2 按鈕
@@ -84,6 +91,7 @@ private:
     ALLEGRO_DISPLAY *display;
     ALLEGRO_TIMER *timer;
     ALLEGRO_EVENT_QUEUE *event_queue;
+    
     UI *ui;
 };
 

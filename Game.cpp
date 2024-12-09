@@ -61,6 +61,39 @@ Game::execute() {
 		// process all events here
 		//printf("%lf %lf\n", DC->mouse.x, DC->mouse.y);
 		al_wait_for_event(event_queue, &event);
+
+		// 處理輸入邏輯（名稱輸入）
+        if (name_input_active) {
+            if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
+                char key = event.keyboard.unichar;
+                debug_log("Key pressed: %c (code: %d)\n", key, event.keyboard.unichar);
+
+                // 處理特殊鍵
+                if (key == '\b') { // Backspace
+                    if (name_input_player == 1 && !player1_name.empty()) {
+                        player1_name.pop_back();
+                    } else if (name_input_player == 2 && !player2_name.empty()) {
+                        player2_name.pop_back();
+                    }
+                } else if (key == '\r') { // Enter 完成輸入
+                    name_input_active = false;
+                    if (name_input_player == 1) {
+                        player1_name_done = true; // 玩家一名稱輸入完成
+                    }
+                    if (name_input_player == 2) {
+                        player2_name_done = true; // 玩家二名稱輸入完成
+                    }
+                    name_input_player = 0;
+                } else if (isprint(key)) { // 一般可見字符
+                    if (name_input_player == 1) {
+                        player1_name += key;
+                    } else if (name_input_player == 2) {
+                        player2_name += key;
+                    }
+                }
+            }
+        }
+
 		switch(event.type) {
 			case ALLEGRO_EVENT_TIMER: {
 				run &= game_update();
@@ -71,6 +104,7 @@ Game::execute() {
 				break;
 			} case ALLEGRO_EVENT_KEY_DOWN: {
 				DC->key_state[event.keyboard.keycode] = true;
+				//printf("keydown\n");
 				break;
 			} case ALLEGRO_EVENT_KEY_UP: {
 				DC->key_state[event.keyboard.keycode] = false;
@@ -84,6 +118,10 @@ Game::execute() {
 				break;
 			} case ALLEGRO_EVENT_MOUSE_BUTTON_UP: {
 				DC->mouse_state[event.mouse.button] = false;
+				break;
+			} case ALLEGRO_EVENT_KEY_CHAR: {
+    			printf("Event Type: %d\n", event.type);
+    			printf("Key pressed: %c (code: %d)\n", event.keyboard.unichar, event.keyboard.keycode);
 				break;
 			} default: break;
 		}
@@ -264,6 +302,10 @@ Game::game_update() {
 					debug_log("<Game> state: change to CHARACTER_SELECTION, scene is %d\n", scene_number);
 					player_turn = 1;
 					SC->toggle_playing(sceneSelect);   //暫停
+					name_input_active = false; // 是否正在輸入名稱
+    				name_input_player = 0; // 當前輸入名稱的玩家 (1 或 2)
+    				player1_name_done = false; // 玩家一名稱是否完成輸入
+    				player2_name_done = false; // 玩家一名稱是否完成輸入
                     state = STATE::CHARACTER_SELECTION; // 切換到遊戲開始狀態
             	}
     		}
@@ -292,29 +334,44 @@ Game::game_update() {
 						click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                         player1_character = character; // 記錄玩家1選擇的角色
                         debug_log("<Game> Player 1 selected character %d\n", character.number);
+
+						// 啟動玩家一輸入名稱
+                		name_input_active = true;
+                		name_input_player = 1;
+
 						player_turn = 2;
-                    } else if (player_turn == 2){
+                    } else if (player_turn == 2 && player1_name_done){
 						click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                         player2_character = character; // 記錄玩家2選擇的角色
                         debug_log("<Game> Player 2 selected character %d\n", character.number);
+
+						// 啟動玩家二輸入名稱
+                		name_input_active = true;
+                		name_input_player = 2;
+
 						player_turn = 3;
                     }
                     // 讓玩家切換，或者繼續進行遊戲
                 }
 
     		}
-			if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
-                if (DC->mouse.x >= play_button.x1 && DC->mouse.x <= play_button.x2 &&
-                    DC->mouse.y >= play_button.y1 && DC->mouse.y <= play_button.y2) {
-                    debug_log("<Game> state: change to LEVEL\n");
-					//選擇角色就去處理讀入選擇圖片
-					apply_character_selection();
-					//讀入選擇技能
-					click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
-					SC->toggle_playing(sceneSelect);
-                    state = STATE::LEVEL; // 還沒寫跳到對應場景
-                }
-            }
+			
+
+    		// 如果按下開始按鈕且玩家名稱已完成輸入
+    		if (player_turn == 3 && !name_input_active &&
+        		DC->mouse_state[1] && !DC->prev_mouse_state[1] &&
+        		DC->mouse.x >= play_button.x1 && DC->mouse.x <= play_button.x2 &&
+        		DC->mouse.y >= play_button.y1 && DC->mouse.y <= play_button.y2 && player2_name_done) {
+        		debug_log("<Game> state: change to LEVEL\n");
+        		apply_character_selection();
+				//之後加入分配技能
+        		click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+        		SC->toggle_playing(sceneSelect);
+
+				debug_log("Player 1 Name: %s\n", player1_name.c_str());
+    			debug_log("Player 2 Name: %s\n", player2_name.c_str());
+        		state = STATE::LEVEL;
+   			}
 			break;
 		}
 		case STATE::LEVEL: {    //遊戲進行中的地方
@@ -403,6 +460,10 @@ void Game::game_draw() {
     				al_draw_bitmap(scene.thumbnail, scene.x, scene.y, 0);
 				}
             }
+			al_draw_text(
+                FC->SuperMarioBros[FontSize::XL], al_map_rgb(255, 255, 255),
+                30, DC->window_height-FontSize::XL - 10,
+                ALLEGRO_ALIGN_LEFT, "BACK");
 			
 			break;
 		}
@@ -439,10 +500,49 @@ void Game::game_draw() {
                     al_draw_bitmap(character.character, character.x, character.y, 0);
                 }
             }
-
-			if (player_turn == 3) {
+			if (player_turn == 3 && player2_name_done) {
 				al_draw_bitmap(playbtn, play_button.x1, play_button.y1, 0);
 			}
+
+			al_draw_text(
+                FC->SuperMarioBros[FontSize::XL], al_map_rgb(255, 255, 255),
+                30, DC->window_height-FontSize::XL - 10,
+                ALLEGRO_ALIGN_LEFT, "BACK");
+
+			// 如果正在輸入名稱，繪製輸入框和提示文字
+    		if (name_input_active) {
+        		float box_width = 400;
+        		float box_height = 50;
+
+        		// 輸入框位置（正中間）
+        		float box_x = DC->window_width / 2 - box_width / 2;
+        		float box_y = DC->window_height / 2 - box_height / 2;
+
+        		// 提示文字位置
+        		float text_x = DC->window_width / 2;
+        		float text_y = box_y - 60;
+
+        		// 繪製背景框
+        		al_draw_filled_rectangle(box_x, box_y, box_x + box_width, box_y + box_height, al_map_rgb(0, 0, 0));
+        		al_draw_rectangle(box_x, box_y, box_x + box_width, box_y + box_height, al_map_rgb(255, 255, 255), 2);
+
+        		// 繪製提示文字
+        		al_draw_text(
+            		FC->SuperMarioBros[FontSize::XL], al_map_rgb(255, 255, 255),
+            		text_x, text_y, ALLEGRO_ALIGN_CENTER, "NickName");
+
+        		// 繪製輸入的名稱
+        		std::string current_name = (name_input_player == 1) ? player1_name : player2_name;
+        		al_draw_text(
+            		FC->SuperMarioBros[FontSize::LARGE], al_map_rgb(255, 255, 255),
+            		DC->window_width / 2, box_y + 10, ALLEGRO_ALIGN_CENTER,
+            		current_name.c_str());
+    		}
+
+    		al_draw_text(
+        		FC->SuperMarioBros[FontSize::XL], al_map_rgb(255, 255, 255),
+        		30, DC->window_height - FontSize::XL - 10,
+        		ALLEGRO_ALIGN_LEFT, "BACK");
 
 			break;
 		}

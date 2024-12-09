@@ -8,9 +8,9 @@
 // fixed settings
 namespace FontSize
 {
-	static constexpr int SMALL = 12, MEDIUM = 24, LARGE = 36;
-	static constexpr std::array<int, 3> list({
-		FontSize::SMALL, FontSize::MEDIUM, FontSize::LARGE
+	static constexpr int SMALL = 12, MEDIUM = 24, LARGE = 36, XL = 72, XXL = 150;
+	static constexpr std::array<int, 5> list({
+		FontSize::SMALL, FontSize::MEDIUM, FontSize::LARGE, FontSize::XL, FontSize::XXL
 	});
 };
 
@@ -30,6 +30,9 @@ public:
 public:
 	std::map<int, ALLEGRO_FONT*> caviar_dreams;
 	std::map<int, ALLEGRO_FONT*> courier_new;
+	std::map<int, ALLEGRO_FONT*> SuperMarioBros;
+	std::map<int, ALLEGRO_FONT*> pirulen;
+	std::map<int, ALLEGRO_FONT*> street_fight;
 private:
 	FontCenter() {}
 };
