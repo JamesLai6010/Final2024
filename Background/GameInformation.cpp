@@ -6,6 +6,8 @@
 #include "../Character/CharacterBase.h"
 #include "../Character/Character2.h"
 #include <random>
+#include <iostream>
+#include <ctime>
 //#include "../algif5/algif.h"
 
 
@@ -23,7 +25,6 @@ void BackgroundINF::init() {
 BackgroundINF::BackgroundINF(int t){ // min
     
     Time = t*60;
-
     player1_HP = max_HP;
     player2_HP = max_HP;
     Player1_Rage = 0;
@@ -38,6 +39,19 @@ BackgroundINF::BackgroundINF(int t){ // min
 
 }
 
+void BackgroundINF::_set_time(){
+    start = std::time(nullptr);
+}
+void BackgroundINF::_set_Time_flag(bool b){
+    Time_change_flag = b;
+}
+bool BackgroundINF::_get_Time_flag(){
+    return Time_change_flag;
+}
+int BackgroundINF::get_Time(){
+    return Time;
+}
+
 void BackgroundINF::update(){
     
     DataCenter *DC = DataCenter::get_instance();
@@ -47,7 +61,14 @@ void BackgroundINF::update(){
     player2_HP = CH2._get_HP();
     Player1_Rage = CH1._get_Rage();
     Player2_Rage = CH2._get_Rage();
-    Time--;
+    std::time_t now = std::time(nullptr);
+    if (now - start >= 1){
+        start = now;
+        Time--;
+        Time_change_flag = true;
+        std::cout << "1 sec past\n";
+    }
+    Time = std::max(0, Time); // 最小為0
 }
 
 void BackgroundINF::draw(){

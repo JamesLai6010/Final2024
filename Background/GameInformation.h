@@ -8,6 +8,7 @@
 #include <allegro5/allegro_image.h>
 #include "../algif5/algif.h"
 #include <vector> 
+#include <ctime>
 
 class BackgroundINF: public Object{
     public:
@@ -16,8 +17,11 @@ class BackgroundINF: public Object{
     void update(); // gen
     void init();
     int _get_random_num();
+    int get_Time();
+    void _set_time();
+    void _set_Time_flag(bool b);
 
-
+    bool _get_Time_flag();
 
     private:
         double player1_HP;
@@ -25,7 +29,8 @@ class BackgroundINF: public Object{
         double Player1_Rage;
         double Player2_Rage;
         int Time = 0;
-
+        bool Time_change_flag = true;
+        std::time_t start;
         double bar_width = 448;
         double bar_height = 30;
         

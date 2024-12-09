@@ -37,6 +37,7 @@ constexpr char background1_img_path[] = "./assets/image/background1.png";
 constexpr char background2_img_path[] = "./assets/image/background2.jpg";
 constexpr char background3_img_path[] = "./assets/image/background3.jpg";
 
+
 constexpr char character1_img_path[] = "./assets/image/character1.png";
 constexpr char character2_img_path[] = "./assets/image/character2.png";
 constexpr char character3_img_path[] = "./assets/image/character3.png";
@@ -47,6 +48,13 @@ constexpr char playbtn_img_path[] = "./assets/image/play_btn.png";
 constexpr char click_sound_path[] = "./assets/sound/click.mp3";
 constexpr char mainPage_sound_path[] = "./assets/sound/mainPage.mp3";
 constexpr char sceneSelect_sound_path[] = "./assets/sound/sceneSelect.mp3";
+
+constexpr char win1_img_path[] = "./assets/image/WIN_IMG/win1.jpg";
+constexpr char win2_img_path[] = "./assets/image/WIN_IMG/win2.jpg";
+constexpr char win3_img_path[] = "./assets/image/WIN_IMG/win3.jpg";
+constexpr char win4_img_path[] = "./assets/image/WIN_IMG/win4.jpg";
+constexpr char win5_img_path[] = "./assets/image/WIN_IMG/win.jpg";
+
 /**
  * @brief Game entry.
  * @details The function processes all allegro events and update the event state to a generic data storage (i.e. DataCenter).
@@ -218,6 +226,13 @@ Game::game_init() {
 	character3 = IC->get(character3_img_path);
 	character4 = IC->get(character4_img_path);
 
+	// win img
+	win_map1 = IC->get(win1_img_path);
+	win_map2 = IC->get(win2_img_path);
+	win_map3 = IC->get(win3_img_path);
+	win_map4 = IC->get(win4_img_path);
+	win_map5 = IC->get(win5_img_path);
+
 	// player btn in character_selected
 	playbtn = IC->get(playbtn_img_path);
     
@@ -371,6 +386,7 @@ Game::game_update() {
 				debug_log("Player 1 Name: %s\n", player1_name.c_str());
     			debug_log("Player 2 Name: %s\n", player2_name.c_str());
         		state = STATE::LEVEL;
+				DC->background_inf->_set_time();
    			}
 			break;
 		}
@@ -380,6 +396,12 @@ Game::game_update() {
 			DC->character2->update(); // 更新角色邏輯
 			DC->prop_god->update();
 			DC->background_inf->update();
+
+			
+			
+			
+			
+
 			static bool BGM_played = false;
 			if(!BGM_played) {
 				background = SC->play(background_sound_path, ALLEGRO_PLAYMODE_LOOP);
@@ -399,8 +421,31 @@ Game::game_update() {
 			// 	debug_log("<Game> state: change to END\n");
 			// 	state = STATE::END;
 			// }
+			if (DC->character1->_get_HP() <= 0 || DC->character2->_get_HP() <= 0 || DC->background_inf->get_Time() <= 0){
+				double player1_hp = DC->character1->_get_HP();
+				double player2_hp = DC->character2->_get_HP();
+				
+				if (player1_hp == player2_hp){
+					no_winner = true;
+				}else if (player1_hp > player2_hp){
+					player1_win = true;
+				}else{
+					player1_win = false;
+				}
+				
+				state = STATE::Fight_FINISH;
+			}
 			break;
-		} case STATE::PAUSE: {
+		} 
+		case STATE::Fight_FINISH:{
+			
+
+			if (DC->key_state[ALLEGRO_KEY_ENTER] && !DC->prev_key_state[ALLEGRO_KEY_ENTER]){
+				state = STATE::END;
+			}
+			break;
+		}
+		case STATE::PAUSE: {
 			if(DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
 				SC->toggle_playing(background);
 				debug_log("<Game> state: change to LEVEL\n");
@@ -559,7 +604,13 @@ void Game::game_draw() {
 			} else if (scene_number == 3) {
 				al_draw_bitmap(background3, 0, 0, 0);
 			}
-    		//debug_log("<Game> Drawing background for LEVEL state.\n");
+			// show time
+			int mins = DC->background_inf->get_Time() / 60;
+			int secs = DC->background_inf->get_Time() % 60;
+			char txt[6];txt[0] = mins/10 + '0';txt[1] = mins%10 + '0';txt[3] = secs/10 + '0';txt[4] = secs%10 + '0';txt[2] = ':';txt[5] = '\0';				
+			al_draw_text(FC->SuperMarioBros[FontSize::XL], al_map_rgb(0, 0, 0), 800, 50, ALLEGRO_ALIGN_CENTER, txt);
+    		
+			//debug_log("<Game> Drawing background for LEVEL state.\n");
 			//畫出角色
             //畫出角色，攻擊者在前
 			if (DC->character1->_get_state() == CharacterState::ATTACK1 ||
@@ -575,6 +626,39 @@ void Game::game_draw() {
 			OC->draw();
             break;
         }
+		case STATE::Fight_FINISH:{
+			char txt[10000];
+			if (no_winner){
+				std::strcpy(txt, "NO WINNER!");
+			}else if (player1_win){
+				std::string ss = player1_name + " WIN!";
+				std::strcpy(txt,ss.c_str());
+			}else{
+				std::string ss = player2_name + " WIN!";
+				std::strcpy(txt,ss.c_str());
+			}
+			
+			
+			if ((player1_win && player1_character.number == 1) 
+			       || (!player1_win && player2_character.number == 1)){
+				al_draw_bitmap(win_map1, 0, 0, 0);
+			}else if ((player1_win && player1_character.number == 2) 
+			       || (!player1_win && player2_character.number == 2)){
+				al_draw_bitmap(win_map2, 0, 0, 0);
+			}else if ((player1_win && player1_character.number == 3) 
+			       || (!player1_win && player2_character.number == 3)){
+				al_draw_bitmap(win_map2, 0, 0, 0);
+			}else if ((player1_win && player1_character.number == 4) 
+			       || (!player1_win && player2_character.number == 4)){
+				al_draw_bitmap(win_map2, 0, 0, 0);
+			}else{
+				al_draw_bitmap(win_map5, 0, 0, 0);
+			}
+			al_draw_text(FC->SuperMarioBros[FontSize::XXL], al_map_rgb(255, 255, 255), 800, 200, ALLEGRO_ALIGN_CENTER, txt);
+
+			al_draw_text(FC->SuperMarioBros[FontSize::LARGE], al_map_rgb(250, 255, 20), 800, 800, ALLEGRO_ALIGN_CENTER, "PRESS ENTER TO EXIT");
+			break;
+		}
         case STATE::PAUSE: {
             al_draw_filled_rectangle(0, 0, DC->window_width, DC->window_height, al_map_rgba(50, 50, 50, 64));
             al_draw_text(

@@ -26,7 +26,8 @@ private:
         PAUSE,     // -> LEVEL
         END,
         CHARACTER_SELECTION,  // 角色選擇
-        SCENE_SELECTION  // 場景選擇
+        SCENE_SELECTION,  // 場景選擇
+        Fight_FINISH
     };
     STATE state;
 
@@ -42,6 +43,12 @@ private:
 	ALLEGRO_BITMAP *character2;
     ALLEGRO_BITMAP *character3;
     ALLEGRO_BITMAP *character4;
+
+    ALLEGRO_BITMAP *win_map1;
+    ALLEGRO_BITMAP *win_map2;
+    ALLEGRO_BITMAP *win_map3;
+    ALLEGRO_BITMAP *win_map4;
+    ALLEGRO_BITMAP *win_map5;
 
     ALLEGRO_BITMAP *playbtn;
     struct Button { // 按鈕結構體
@@ -85,6 +92,9 @@ private:
     Button map_button2; // 場景2 按鈕
     Button map_button3; // 場景3 按鈕
     Button map_button4; // 場景4 按鈕
+
+    bool no_winner = false;
+    bool player1_win = false;
 
     Button play_button; // 選完角色的按鈕
 private:
