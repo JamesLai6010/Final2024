@@ -553,6 +553,18 @@ void Game::game_draw() {
                 FC->SuperMarioBros[FontSize::XL], al_map_rgb(255, 255, 255),
                 30, DC->window_height-FontSize::XL - 10,
                 ALLEGRO_ALIGN_LEFT, "BACK");
+			
+			if (player_turn == 1 && !name_input_active) {
+				al_draw_text(
+                FC->pirulen[FontSize::XL], al_map_rgb(0, 0, 0),
+                DC->window_width/2, DC->window_height/2,
+                ALLEGRO_ALIGN_CENTER, "Player1 TURN");	
+			} else if (player_turn == 2 && !name_input_active) {
+				al_draw_text(
+                FC->pirulen[FontSize::XL], al_map_rgb(0, 0, 0),
+                DC->window_width/2, DC->window_height/2,
+                ALLEGRO_ALIGN_CENTER, "Player2 TURN");
+			}
 
 			// 如果正在輸入名稱，繪製輸入框和提示文字
     		if (name_input_active) {
@@ -582,6 +594,10 @@ void Game::game_draw() {
             		FC->SuperMarioBros[FontSize::LARGE], al_map_rgb(255, 255, 255),
             		DC->window_width / 2, box_y + 10, ALLEGRO_ALIGN_CENTER,
             		current_name.c_str());
+				
+				al_draw_text(
+            		FC->SuperMarioBros[FontSize::LARGE], al_map_rgb(0, 0, 0),
+            		text_x, box_y + 60, ALLEGRO_ALIGN_CENTER, "PRESS ENTER");
     		}
 
     		al_draw_text(
