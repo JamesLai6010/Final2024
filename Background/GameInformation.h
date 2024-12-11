@@ -21,6 +21,8 @@ class BackgroundINF: public Object{
     void _set_time();
     void _set_Time_flag(bool b);
 
+
+
     bool _get_Time_flag();
 
     private:

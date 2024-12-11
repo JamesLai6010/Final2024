@@ -28,6 +28,7 @@ public:
 	// 技能函數
     void skill1_damage(CharacterBase& caster, CharacterBase& target, double damage);
     void skill1_knockback(CharacterBase& caster, CharacterBase& target, double distance);
+	void skill1_poison(CharacterBase& caster, CharacterBase& target, double time);
 
 	void set_player_roles(int player1_role, int player2_role);
 

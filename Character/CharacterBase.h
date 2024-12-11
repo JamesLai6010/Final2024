@@ -57,6 +57,8 @@ public:
     void start_knockback(double distance, double direction);
     void update_knockback();
     void set_slide_timer(double t);
+    void _set_poisonTimer(double t);
+    double _get_ATKbias();
 protected:  
 
 
@@ -79,11 +81,13 @@ protected:
     bool is_attacking = false;
     bool is_jumping = false;
     bool is_hurting = false;
+    bool is_poisoned = false;
     bool sliding = false;
 
     double slide_distance;
     double slide_direction;
     double slide_speed;
+    double poison_timer;
 
     // 搭載的符文參數
     double shield_val = 0;

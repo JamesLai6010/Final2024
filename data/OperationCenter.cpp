@@ -221,6 +221,10 @@ void OperationCenter::_update_character12() {
 			CH2.attack_opponent(CH1);
 		}
 	}else if (ch1_isAttack){
+		if (CH2._get_state() == CharacterState::SHIELD){
+			CH2._set_Rage(20);
+			return;
+		}
 		//std::cout << "CH1 timer: "<< CH1._get_ATKtimer() << std::endl;
 		if (CH2._get_state() == CharacterState::HURT || CH1._get_ATKtimer() - 0.5 != 0){
 			//std::cout << "HIT1" << std::endl;
@@ -230,6 +234,10 @@ void OperationCenter::_update_character12() {
 			CH2.set_state(CharacterState::HURT);
 		}
 	}else if (ch2_isAttack){
+		if (CH1._get_state() == CharacterState::SHIELD){
+			CH1._set_Rage(20);
+			return;
+		}
 		//std::cout << "CH2 timer: "<< CH2._get_ATKtimer() << std::endl;
 		if (CH1._get_state() == CharacterState::HURT || CH2._get_ATKtimer() - 0.5 != 0){
 			//std::cout << "HIT2" << std::endl;
@@ -247,6 +255,7 @@ void OperationCenter::_update_character12() {
 				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
 			} else if (player1_role == 2) {
 				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
+				skill1_poison(CH1, CH2, 1000);
 			} else if (player2_role == 3) {
 				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
 			} else if (player2_role == 4) {
@@ -282,7 +291,8 @@ void OperationCenter::_update_character12() {
         if (player2_role == 1) {
             skill1_damage(CH2, CH1, 35); // 玩家2角色1使用攻擊1
         } else if (player2_role == 2) {
-            skill1_damage(CH2, CH1, 25); // 玩家2角色2使用攻擊1
+            skill1_damage(CH2, CH1, 40); // 玩家2攻擊玩家1，扣40血
+			skill1_poison(CH2, CH1, 1000);
         } else if (player2_role == 3) {
             skill1_damage(CH2, CH1, 45); // 玩家2角色3使用攻擊1
         } else if (player2_role == 4) {
@@ -313,8 +323,9 @@ void OperationCenter::_update_character12() {
 	}
 }
 
+
 void OperationCenter::skill1_damage(CharacterBase& caster, CharacterBase& target, double damage) {
-    target._set_HP(-damage); // 扣血
+    target._set_HP(-damage - caster._get_ATKbias()); // 扣血
     std::cout << "Damage skill applied! Target HP: " << target._get_HP() << "\n";
 }
 
@@ -328,3 +339,8 @@ void OperationCenter::skill1_knockback(CharacterBase& caster, CharacterBase& tar
 
     std::cout << "Knockback started! Distance: " << distance << ", Direction: " << direction << std::endl;
 }
+
+void OperationCenter::skill1_poison(CharacterBase& caster, CharacterBase& target, double time){
+	target._set_poisonTimer(time);
+}
+

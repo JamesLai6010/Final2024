@@ -188,6 +188,15 @@ void CharacterBase::update() {
         }
     }
 
+    if (is_poisoned){
+        poison_timer -= 1;
+        if (poison_timer <= 0){
+            is_poisoned = false;
+        }
+        if ((int)poison_timer%2)
+            HP -= 0.1;
+    }
+
     // 更新滑行過程
     if (sliding) {
         update_knockback();
@@ -238,7 +247,7 @@ void CharacterBase::draw() {
         algif_draw_gif(hp_effect_animation, effect_x, effect_y, 0);
     }
 
-    if (is_hurting) {
+    if (is_hurting || is_poisoned) {
         float effect_x = shape->center_x() - (hit_animation->width * scale_x) / 2;
         float effect_y = shape->center_y() - (hit_animation->height * scale_y) / 2 + 30;
         algif_draw_gif(hit_animation, effect_x, effect_y, 0);
@@ -287,8 +296,11 @@ double CharacterBase::_set_HP(double hp){
 double CharacterBase::_set_Rage(double rage){
     Rage += rage;
 }
+ double CharacterBase::_get_ATKbias(){
+    return Atk_bias;
+ }
 
-void CharacterBase::attack_opponent(CharacterBase &opp){
+void CharacterBase::attack_opponent(CharacterBase &opp){ // no use
     //opp.HP = std::max((double)0, (double)(opp.HP - 40));
     //opp.Rage = std::max((double) 0, (double)(opp.Rage + 15));
     //std::cout << "opp Hp: " << opp.HP  << " ,Rage: " << opp.Rage <<std::endl;
@@ -317,3 +329,9 @@ void CharacterBase::update_knockback() {
 void CharacterBase::set_slide_timer(double t) {
     slide_timer = t;
 }
+
+void CharacterBase::_set_poisonTimer(double t){
+    poison_timer = t;
+    is_poisoned = true;
+}
+
