@@ -405,6 +405,7 @@ Game::game_update() {
 
 				debug_log("Player 1 Name: %s\n", player1_name.c_str());
     			debug_log("Player 2 Name: %s\n", player2_name.c_str());
+				set_player_roles();
         		state = STATE::LEVEL;
 				DC->background_inf->_set_time();
    			}
@@ -727,6 +728,10 @@ Game::~Game() {
 	al_destroy_event_queue(event_queue);
 }
 
+void Game::set_player_roles() {
+    OperationCenter* OC = OperationCenter::get_instance();
+    OC->set_player_roles(player1_character.number, player2_character.number);
+}
 
 void Game::apply_character_selection() {
     DataCenter* DC = DataCenter::get_instance();
@@ -789,3 +794,4 @@ void Game::apply_character_selection() {
         });
     }
 }
+

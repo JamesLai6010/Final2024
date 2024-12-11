@@ -172,8 +172,15 @@ void OperationCenter::_draw_towerBullet() {
 		towerBullet->draw();
 }
 
+void OperationCenter::set_player_roles(int player1_role, int player2_role) {
+    this->player1_role = player1_role;
+    this->player2_role = player2_role;
+    std::cout << "Player 1 role set to: " << player1_role << std::endl;
+    std::cout << "Player 2 role set to: " << player2_role << std::endl;
+}
 
-void OperationCenter::_update_character12(){
+
+void OperationCenter::_update_character12() {
 	
 	DataCenter *DC = DataCenter::get_instance();
 	CharacterBase &CH1 = *(DC->character1);
@@ -232,6 +239,92 @@ void OperationCenter::_update_character12(){
 			CH1.set_state(CharacterState::HURT);
 		}
 	}
+	if (ch1_isAttack) {
+		std::cout << "Player 1 is attacking!" << std::endl;
+		CharacterState current_state = CH1._get_state();
+        if (current_state == CharacterState::ATTACK1) {
+			if (player1_role == 1) {
+				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
+			} else if (player1_role == 2) {
+				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
+			} else if (player2_role == 3) {
+				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
+			} else if (player2_role == 4) {
+				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
+			}
+		} else if (current_state == CharacterState::ATTACK2) {
+			if (player1_role == 1) {
+				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
+			} else if (player1_role == 2) {
+				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
+			} else if (player2_role == 3) {
+				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
+			} else if (player2_role == 4) {
+				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
+			}
+		} else if (current_state == CharacterState::ATTACK3) {
+			if (player1_role == 1) {
+				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
+			} else if (player1_role == 2) {
+				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
+			} else if (player2_role == 3) {
+				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
+			} else if (player2_role == 4) {
+				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
+			}
+		}
+    }
 
+    if (ch2_isAttack) {
+		std::cout << "Player 2 is attacking!" << std::endl;
+    	CharacterState current_state = CH2._get_state();
+    if (current_state == CharacterState::ATTACK1) {
+        if (player2_role == 1) {
+            skill1_damage(CH2, CH1, 35); // 玩家2角色1使用攻擊1
+        } else if (player2_role == 2) {
+            skill1_damage(CH2, CH1, 25); // 玩家2角色2使用攻擊1
+        } else if (player2_role == 3) {
+            skill1_damage(CH2, CH1, 45); // 玩家2角色3使用攻擊1
+        } else if (player2_role == 4) {
+            skill1_damage(CH2, CH1, 55); // 玩家2角色4使用攻擊1
+        }
+    } else if (current_state == CharacterState::ATTACK2) {
+        if (player2_role == 1) {
+            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
+        } else if (player2_role == 2) {
+            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
+        } else if (player2_role == 3) {
+            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
+        } else if (player2_role == 4) {
+            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
+        }
+    } else if (current_state == CharacterState::ATTACK3) {
+        if (player2_role == 1) {
+            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
+        } else if (player2_role == 2) {
+            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
+        } else if (player2_role == 3) {
+            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
+        } else if (player2_role == 4) {
+            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
+        }
+    }
 	
+	}
+}
+
+void OperationCenter::skill1_damage(CharacterBase& caster, CharacterBase& target, double damage) {
+    target._set_HP(-damage); // 扣血
+    std::cout << "Damage skill applied! Target HP: " << target._get_HP() << "\n";
+}
+
+void OperationCenter::skill1_knockback(CharacterBase& caster, CharacterBase& target, double distance) {
+    double direction = (caster._get_dir() ? -1 : 1); // 根據方向決定滑行方向
+
+    // 初始化滑行狀態
+    target.set_state(CharacterState::SLIDE);         // 切換為受傷狀態
+    target.start_knockback(distance, direction);   // 開始滑行（初始化距離和方向）
+    target.set_slide_timer(1.0);                    // 設定受傷持續時間（例如 1 秒）
+
+    std::cout << "Knockback started! Distance: " << distance << ", Direction: " << direction << std::endl;
 }

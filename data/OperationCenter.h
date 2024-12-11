@@ -5,6 +5,8 @@
  * @brief Class that defines functions for all object operations.
  * @details Object self-update, draw, and object-to-object interact functions are defined here.
  */
+
+class CharacterBase;
 class OperationCenter
 {
 public:
@@ -22,6 +24,13 @@ public:
 	 * @details Calls all other draw functions.
 	 */
 	void draw();
+
+	// 技能函數
+    void skill1_damage(CharacterBase& caster, CharacterBase& target, double damage);
+    void skill1_knockback(CharacterBase& caster, CharacterBase& target, double distance);
+
+	void set_player_roles(int player1_role, int player2_role);
+
 private:
 	OperationCenter() {}
 private:
@@ -41,6 +50,9 @@ private:
 	void _draw_monster();
 	void _draw_tower();
 	void _draw_towerBullet();
+
+	int player1_role = 0; // 玩家1角色編號
+    int player2_role = 0; // 玩家2角色編號
 };
 
 #endif

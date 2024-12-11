@@ -19,6 +19,7 @@ enum class CharacterState {
     SHIELD,
     HURT,
     DEAD,
+    SLIDE,
     NONE
 };
 
@@ -52,7 +53,10 @@ public:
 
     // attack oppent, set their val
     void attack_opponent(CharacterBase &opp);
-
+    //擊退效果
+    void start_knockback(double distance, double direction);
+    void update_knockback();
+    void set_slide_timer(double t);
 protected:  
 
 
@@ -75,6 +79,11 @@ protected:
     bool is_attacking = false;
     bool is_jumping = false;
     bool is_hurting = false;
+    bool sliding = false;
+
+    double slide_distance;
+    double slide_direction;
+    double slide_speed;
 
     // 搭載的符文參數
     double shield_val = 0;
@@ -92,6 +101,7 @@ protected:
     double attack_duration = 0.5;
     double shield_duration = 0.7;
     double hurt_timer = 0.0;
+    double slide_timer = 0.0;
     double hurt_duration = 0.4;
 
     // 效果計時器

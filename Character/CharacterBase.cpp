@@ -64,7 +64,12 @@ void CharacterBase::set_state(CharacterState new_state) {
             is_hurting = true;
         }
         GIFCenter* GIFC = GIFCenter::get_instance();
-        current_animation = GIFC->get(gifPath[state]);
+        //slide用hurt gif
+        if (state == CharacterState::SLIDE) {
+            current_animation = GIFC->get(gifPath[CharacterState::HURT]);
+        } else {
+            current_animation = GIFC->get(gifPath[state]);
+        }
         update_bounding_box();
     }
 }
@@ -176,11 +181,29 @@ void CharacterBase::update() {
 
     if (is_hurting) {
         hurt_timer -= 1.0 / 60.0; // 減少攻擊計時器
-        printf("hurt: timer %f\n",hurt_timer);
+        //printf("hurt: timer %f\n",hurt_timer);
         if (hurt_timer <= 0) {
             is_hurting = false; // 攻擊結束
             set_state(CharacterState::STOP); // 返回停止狀態
         }
+    }
+
+    // 更新滑行過程
+    if (sliding) {
+        update_knockback();
+        slide_timer -= 1.0 / 60.0; // 減少攻擊計時器
+        //printf("hurt: timer ")
+        if (hurt_timer <= 0) {
+            sliding = false; // 攻擊結束
+            set_state(CharacterState::STOP); // 返回停止狀態
+        } 
+    }
+
+    float current_x = shape->center_x();
+    if (current_x < 0) {
+        shape->update_center_x(0); // 修正到左邊界
+    } else if (current_x > 1600) {
+        shape->update_center_x(1600); // 修正到右邊界
     }
 }
 
@@ -228,7 +251,8 @@ void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double a
     Speed_timer += sp_t;
     Atk_bias = std::max(Atk_bias, atk_b);
     Atk_timer += atk_t;
-    if (hp > 0) Hp_timer += 0.3;
+    if (hp > 0)
+    Hp_timer += 0.3;
 }
 // 選角後的更新路徑
 void CharacterBase::reset_gif_paths(const std::map<CharacterState, std::string>& new_gif_paths) {
@@ -265,8 +289,31 @@ double CharacterBase::_set_Rage(double rage){
 }
 
 void CharacterBase::attack_opponent(CharacterBase &opp){
-    opp.HP = std::max((double)0, (double)(opp.HP - 40));
-    opp.Rage = std::max((double) 0, (double)(opp.Rage + 15));
-    std::cout << "opp Hp: " << opp.HP  << " ,Rage: " << opp.Rage <<std::endl;
+    //opp.HP = std::max((double)0, (double)(opp.HP - 40));
+    //opp.Rage = std::max((double) 0, (double)(opp.Rage + 15));
+    //std::cout << "opp Hp: " << opp.HP  << " ,Rage: " << opp.Rage <<std::endl;
 }
 
+void CharacterBase::start_knockback(double distance, double direction) {
+    this->sliding = true;          // 設置滑行狀態
+    this->slide_distance = distance; // 設置總滑行距離
+    this->slide_direction = direction; // 設置滑行方向
+    this->slide_speed = distance / 60.0; // 假設滑行持續 1 秒，每幀移動距離
+}
+
+void CharacterBase::update_knockback() {
+    if (!sliding) return; // 如果不在滑行狀態則直接返回
+
+    double slide_step = std::min(slide_speed, slide_distance);
+    shape->update_center_x(shape->center_x() + slide_direction * slide_step);
+
+    slide_distance -= slide_step; // 減少剩餘滑行距離
+    if (slide_distance <= 0) {
+        sliding = false; // 滑行結束
+        std::cout << "Knockback completed! Final position: " << shape->center_x() << std::endl;
+    }
+}
+
+void CharacterBase::set_slide_timer(double t) {
+    slide_timer = t;
+}

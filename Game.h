@@ -17,6 +17,7 @@ public:
 
     //角色選擇
     void apply_character_selection();
+    void set_player_roles();
 
 private:
     enum class STATE {
