@@ -21,7 +21,7 @@ class Prop_God: public Object{
 Prop_God::Prop_God(int gr): gen_rate{gr} {
     std::random_device rd; // 真正隨機種子（硬體支持）
     std::default_random_engine engine(rd());
-    std::uniform_int_distribution<int> dist(1, 10000); // 範圍 [1, 100]
+    std::uniform_int_distribution<int> dist(1, 1600); // 範圍 [1, 100]
     int x;
     for (int i=0;i<1000;i++){
         x = dist(engine);

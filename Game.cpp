@@ -74,7 +74,7 @@ Game::execute() {
         if (name_input_active) {
             if (event.type == ALLEGRO_EVENT_KEY_CHAR) {
                 char key = event.keyboard.unichar;
-                debug_log("Key pressed: %c (code: %d)\n", key, event.keyboard.unichar);
+                //debug_log("Key pressed: %c (code: %d)\n", key, event.keyboard.unichar);
 
                 // 處理特殊鍵
                 if (key == '\b') { // Backspace
@@ -128,8 +128,8 @@ Game::execute() {
 				DC->mouse_state[event.mouse.button] = false;
 				break;
 			} case ALLEGRO_EVENT_KEY_CHAR: {
-    			printf("Event Type: %d\n", event.type);
-    			printf("Key pressed: %c (code: %d)\n", event.keyboard.unichar, event.keyboard.keycode);
+    			//printf("Event Type: %d\n", event.type);
+    			//printf("Key pressed: %c (code: %d)\n", event.keyboard.unichar, event.keyboard.keycode);
 				break;
 			} default: break;
 		}
@@ -275,14 +275,23 @@ Game::game_update() {
 	static ALLEGRO_SAMPLE_INSTANCE *sceneSelect = nullptr;
 	switch(state) {
 		case STATE::MAIN_MENU: { // 主頁邏輯
+			sceneSelectionBGM = false;
             if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
+				printf("mouse_x = %lf mouse_y = %lf\n", DC->mouse.x, DC->mouse.y);
                 if (DC->mouse.x >= start_button.x1 && DC->mouse.x <= start_button.x2 &&
                     DC->mouse.y >= start_button.y1 && DC->mouse.y <= start_button.y2) {
 					click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                     debug_log("<Game> state: change to SCENE_SELECTION\n");
 					SC->toggle_playing(mainPage);   //把mainPage bgm暫停
+					//SC->toggle_playing(sceneSelect);
                     state = STATE::SCENE_SELECTION; // 切換狀態
                 }
+				if (DC->mouse.x >= 650 && DC->mouse.x <= 950 &&
+                    DC->mouse.y >= 767 && DC->mouse.y <= 880) {
+						click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+                   		debug_log("<Game> state: change to END\n");
+						state = STATE::END; // 切換狀態
+				}
             }
 
 			static bool BGM_played = false;
@@ -294,12 +303,12 @@ Game::game_update() {
             break;
         }
 		case STATE::SCENE_SELECTION: {
+			
             // 選擇場景
 			// 檢查場景縮圖是否被滑鼠懸停
-			static bool BGM_played = false;
-			if(!BGM_played) {
-				sceneSelect = SC->play(sceneSelect_sound_path, ALLEGRO_PLAYMODE_LOOP);
-				BGM_played = true;
+			if (!sceneSelectionBGM) {
+    			sceneSelect = SC->play(sceneSelect_sound_path, ALLEGRO_PLAYMODE_LOOP);
+    			sceneSelectionBGM = true;
 			}
     		for (auto &scene : scene_thumbnails) {
         		// 檢查鼠標是否在該縮圖範圍內
@@ -317,6 +326,7 @@ Game::game_update() {
 					debug_log("<Game> state: change to CHARACTER_SELECTION, scene is %d\n", scene_number);
 					player_turn = 1;
 					SC->toggle_playing(sceneSelect);   //暫停
+					sceneSelectionBGM = false;
 					name_input_active = false; // 是否正在輸入名稱
     				name_input_player = 0; // 當前輸入名稱的玩家 (1 或 2)
     				player1_name_done = false; // 玩家一名稱是否完成輸入
@@ -324,14 +334,24 @@ Game::game_update() {
                     state = STATE::CHARACTER_SELECTION; // 切換到遊戲開始狀態
             	}
     		}
-            
+            //back to last scene
+			if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
+                if (DC->mouse.x >= 25 && DC->mouse.x <= 225 &&
+                    DC->mouse.y >= 810 && DC->mouse.y <= 880) {
+					click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+                    debug_log("<Game> state: change to MAIN\n");
+					sceneSelectionBGM = true;
+					SC->toggle_playing(mainPage);
+					SC->toggle_playing(sceneSelect);
+                    state = STATE::MAIN_MENU; // 切換狀態
+                }
+            }
             break;
         }
 		case STATE::CHARACTER_SELECTION: {
-			static bool BGM_played = false;
-    		if (!BGM_played) {
+    		if (!sceneSelectionBGM) {
         		SC->toggle_playing(sceneSelect);   //繼續播放
-        		BGM_played = true;
+        		sceneSelectionBGM = true;
     		}
 			for (auto &character : select_character) {
         		// 檢查鼠標是否在該縮圖範圍內
@@ -388,6 +408,15 @@ Game::game_update() {
         		state = STATE::LEVEL;
 				DC->background_inf->_set_time();
    			}
+			//back to last scene
+			if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
+                if (DC->mouse.x >= 25 && DC->mouse.x <= 225 &&
+                    DC->mouse.y >= 810 && DC->mouse.y <= 880) {
+					click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+                    debug_log("<Game> state: change to SCENE_SELECTION\n");
+                    state = STATE::SCENE_SELECTION; // 切換狀態
+                }
+            }
 			break;
 		}
 		case STATE::LEVEL: {    //遊戲進行中的地方
@@ -558,12 +587,12 @@ void Game::game_draw() {
 				al_draw_text(
                 FC->pirulen[FontSize::XL], al_map_rgb(0, 0, 0),
                 DC->window_width/2, DC->window_height/2,
-                ALLEGRO_ALIGN_CENTER, "Player1 TURN");	
+                ALLEGRO_ALIGN_CENTER, "Player 1 TURN");	
 			} else if (player_turn == 2 && !name_input_active) {
 				al_draw_text(
                 FC->pirulen[FontSize::XL], al_map_rgb(0, 0, 0),
                 DC->window_width/2, DC->window_height/2,
-                ALLEGRO_ALIGN_CENTER, "Player2 TURN");
+                ALLEGRO_ALIGN_CENTER, "Player 2 TURN");
 			}
 
 			// 如果正在輸入名稱，繪製輸入框和提示文字
@@ -624,7 +653,7 @@ void Game::game_draw() {
 			int mins = DC->background_inf->get_Time() / 60;
 			int secs = DC->background_inf->get_Time() % 60;
 			char txt[6];txt[0] = mins/10 + '0';txt[1] = mins%10 + '0';txt[3] = secs/10 + '0';txt[4] = secs%10 + '0';txt[2] = ':';txt[5] = '\0';				
-			al_draw_text(FC->SuperMarioBros[FontSize::XL], al_map_rgb(0, 0, 0), 800, 50, ALLEGRO_ALIGN_CENTER, txt);
+			al_draw_text(FC->SuperMarioBros[FontSize::XL], al_map_rgb(255, 255, 255), 800, 50, ALLEGRO_ALIGN_CENTER, txt);
     		
 			//debug_log("<Game> Drawing background for LEVEL state.\n");
 			//畫出角色

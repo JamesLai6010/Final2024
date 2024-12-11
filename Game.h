@@ -97,6 +97,8 @@ private:
     bool player1_win = false;
 
     Button play_button; // 選完角色的按鈕
+
+    bool sceneSelectionBGM = false;
 private:
     ALLEGRO_DISPLAY *display;
     ALLEGRO_TIMER *timer;

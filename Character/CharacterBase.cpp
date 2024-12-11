@@ -40,9 +40,10 @@ void CharacterBase::init() {
     }
 
     // 加載狀態動畫
-    //hp_effect_animation = GIFC->get("./assets/gif/Healthy_effect.gif");
+    hp_effect_animation = GIFC->get("./assets/gif/minecraft_effect4.gif");
     speed_effect_animation = GIFC->get("./assets/gif/Speed_effect.gif");
-    //atk_effect_animation = GIFC->get("./assets/gif/Crit_effect.gif");
+    atk_effect_animation = GIFC->get("./assets/gif/minecraft_effect2.gif");
+    hit_animation = GIFC->get("./assets/gif/Hit.gif");
 
     // 加載初始動畫 (靜止)
     current_animation = GIFC->get(gifPath[CharacterState::STOP]);
@@ -58,6 +59,10 @@ void CharacterBase::init() {
 void CharacterBase::set_state(CharacterState new_state) {
     if (state != new_state) {
         state = new_state;
+        if (state == CharacterState::HURT) {
+            hurt_timer = hurt_duration;
+            is_hurting = true;
+        }
         GIFCenter* GIFC = GIFCenter::get_instance();
         current_animation = GIFC->get(gifPath[state]);
         update_bounding_box();
@@ -77,12 +82,20 @@ void CharacterBase::set_key_mapping(int left, int right, int jump, int attack1, 
 void CharacterBase::update() {
     DataCenter* DC = DataCenter::get_instance();
     
-    if (Speed_timer < 0){
+    if (Speed_timer <= 0){
         Speed_timer = 0;
         speed_bias = 0;
     }else{
         Speed_timer -= 1;
     }
+    if (Atk_timer <= 0){
+        Atk_timer = 0;
+        Atk_bias = 0;
+    }else{
+        Atk_timer -= 1;
+    }
+    if (Hp_timer <= 0) Hp_timer = 0;
+    else Hp_timer -= 1 / 60.0;
 
      // **防止在 SHIELD 狀態下水平移動**    
     if (state != CharacterState::SHIELD) {
@@ -99,7 +112,7 @@ void CharacterBase::update() {
             if (!is_attacking && !is_jumping) {
                 set_state(CharacterState::WALK);
             }
-        } else if (!is_attacking && !is_jumping) {
+        } else if (!is_attacking && !is_jumping && !is_hurting) {
             set_state(CharacterState::STOP); // 停止狀態
         }
     }
@@ -158,9 +171,17 @@ void CharacterBase::update() {
         is_jumping = true;
         vertical_velocity = -jump_initial_velocity; // 跳躍初速度（負值表示向上）
         set_state(CharacterState::JUMP);  // 切換到跳躍狀態
-    }
+    } 
 
-    
+
+    if (is_hurting) {
+        hurt_timer -= 1.0 / 60.0; // 減少攻擊計時器
+        printf("hurt: timer %f\n",hurt_timer);
+        if (hurt_timer <= 0) {
+            is_hurting = false; // 攻擊結束
+            set_state(CharacterState::STOP); // 返回停止狀態
+        }
+    }
 }
 
 void CharacterBase::draw() {
@@ -193,6 +214,12 @@ void CharacterBase::draw() {
         float effect_y = shape->center_y() - (hp_effect_animation->height * scale_y) / 2;
         algif_draw_gif(hp_effect_animation, effect_x, effect_y, 0);
     }
+
+    if (is_hurting) {
+        float effect_x = shape->center_x() - (hit_animation->width * scale_x) / 2;
+        float effect_y = shape->center_y() - (hit_animation->height * scale_y) / 2 + 30;
+        algif_draw_gif(hit_animation, effect_x, effect_y, 0);
+    }
 }
 // 設定藥水效果
 void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b){
@@ -201,6 +228,7 @@ void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double a
     Speed_timer += sp_t;
     Atk_bias = std::max(Atk_bias, atk_b);
     Atk_timer += atk_t;
+    if (hp > 0) Hp_timer += 0.3;
 }
 // 選角後的更新路徑
 void CharacterBase::reset_gif_paths(const std::map<CharacterState, std::string>& new_gif_paths) {

@@ -64,6 +64,7 @@ protected:
     ALGIF_ANIMATION* hp_effect_animation = nullptr;    // 血量效果動畫
     ALGIF_ANIMATION* speed_effect_animation = nullptr; // 速度效果動畫
     ALGIF_ANIMATION* atk_effect_animation = nullptr;   // 攻擊效果動畫
+    ALGIF_ANIMATION* hit_animation = nullptr;
 
     // 角色參數
     double HP = 1000;
@@ -73,6 +74,7 @@ protected:
     bool is_facing_left = false;
     bool is_attacking = false;
     bool is_jumping = false;
+    bool is_hurting = false;
 
     // 搭載的符文參數
     double shield_val = 0;
@@ -89,6 +91,8 @@ protected:
     double attack_timer = 0.0;
     double attack_duration = 0.5;
     double shield_duration = 0.7;
+    double hurt_timer = 0.0;
+    double hurt_duration = 0.4;
 
     // 效果計時器
     double Hp_timer = 0;
