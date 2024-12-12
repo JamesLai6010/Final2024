@@ -7,6 +7,7 @@
 
 class Prop_God: public Object{
     public:
+    void reset();
     Prop_God(int);
     void draw(); // 0
     void update(); // gen

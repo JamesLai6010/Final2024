@@ -20,6 +20,21 @@ void BackgroundINF::init() {
     GIFCenter *GC = GIFCenter::get_instance();
     bolt = IC->get(bolt_img_path);
     heart = GC->get(heart_gif_path);
+    Time = 180;
+    player1_HP = max_HP;
+    player2_HP = max_HP;
+    Player1_Rage = 0;
+    Player2_Rage = 0;
+    Random_Num.clear();
+
+    std::random_device rd; // 真正隨機種子（硬體支持）
+    std::default_random_engine engine(rd());
+    std::uniform_int_distribution<int> dist(1, 10000); // 範圍 [1, 100]
+    for (int i=0;i<10000;i++){
+        Random_Num.push_back(dist(engine));
+    }
+    rand_idx = 0;
+
 }
 
 BackgroundINF::BackgroundINF(int t){ // min

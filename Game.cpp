@@ -842,11 +842,25 @@ void Game::reset_game() {
     OperationCenter* OC = OperationCenter::get_instance();
 	DC->character1->reset();
 	DC->character2->reset();
+	DC->background_inf->init();
+	DC->prop_god->reset();
     // 重設遊戲狀態
-    state = STATE::MAIN_MENU; // 返回主選單
+    
+	player_turn = 1;
     player1_win = false;
     no_winner = false;
+	player1_name = ""; // 玩家一名稱
+    player2_name = ""; // 玩家二名稱
+    name_input_active = false; // 是否正在輸入名稱
+    name_input_player = 0; // 當前輸入名稱的玩家 (1 或 2)
+    player1_name_done = false; // 玩家一名稱是否完成輸入
+    player2_name_done = false; // 玩家一名稱是否完成輸入
+    
 
+	sceneSelectionBGM = false;
+    gameBGM = false;
+    victoryBGM = false;
+	state = STATE::MAIN_MENU; // 返回主選單
 
     // 重置數據中心
     //DC->reset();

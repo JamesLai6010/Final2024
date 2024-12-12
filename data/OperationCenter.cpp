@@ -33,17 +33,6 @@ void OperationCenter::update() {
 
 }
 
-void OperationCenter::_update_monster() {
-	std::vector<Monster*> &monsters = DataCenter::get_instance()->monsters;
-	for(Monster *monster : monsters)
-		monster->update();
-}
-
-void OperationCenter::_update_tower() {
-	std::vector<Tower*> &towers = DataCenter::get_instance()->towers;
-	for(Tower *tower : towers)
-		tower->update();
-}
 
 void OperationCenter::_update_prop(){
 	std::vector<Prop*> &props = DataCenter::get_instance()->props;
@@ -52,72 +41,6 @@ void OperationCenter::_update_prop(){
 	}
 }
 
-void OperationCenter::_update_towerBullet() {
-	std::vector<Bullet*> &towerBullets = DataCenter::get_instance()->towerBullets;
-	for(Bullet *towerBullet : towerBullets)
-		towerBullet->update();
-	// Detect if a bullet flies too far (exceeds its fly distance limit), which means the bullet lifecycle has ended.
-	for(size_t i = 0; i < towerBullets.size(); ++i) {
-		if(towerBullets[i]->get_fly_dist() <= 0) {
-			towerBullets.erase(towerBullets.begin()+i);
-			--i;
-		}
-	}
-}
-
-void OperationCenter::_update_monster_towerBullet() {
-	DataCenter *DC = DataCenter::get_instance();
-	std::vector<Monster*> &monsters = DC->monsters;
-	std::vector<Bullet*> &towerBullets = DC->towerBullets;
-	for(size_t i = 0; i < monsters.size(); ++i) {
-		for(size_t j = 0; j < towerBullets.size(); ++j) {
-			// Check if the bullet overlaps with the monster.
-			if(monsters[i]->shape->overlap(*(towerBullets[j]->shape))) {
-				// Reduce the HP of the monster. Delete the bullet.
-				monsters[i]->HP -= towerBullets[j]->get_dmg();
-				towerBullets.erase(towerBullets.begin()+j);
-				--j;
-			}
-		}
-	}
-}
-
-void OperationCenter::_update_monster_player() {
-	DataCenter *DC = DataCenter::get_instance();
-	std::vector<Monster*> &monsters = DC->monsters;
-	Player *&player = DC->player;
-	for(size_t i = 0; i < monsters.size(); ++i) {
-		// Check if the monster is killed.
-		if(monsters[i]->HP <= 0) {
-			// Monster gets killed. Player receives money.
-			player->coin += monsters[i]->get_money();
-			monsters.erase(monsters.begin()+i);
-			--i;
-			// Since the current monsster is killed, we can directly proceed to next monster.
-			break;
-		}
-		// Check if the monster reaches the end.
-		if(monsters[i]->get_path().empty()) {
-			monsters.erase(monsters.begin()+i);
-			player->HP--;
-			--i;
-		}
-	}
-}
-
-//快龍
-void OperationCenter::_update_monster_hero()
-{
-	DataCenter *DC = DataCenter::get_instance();
-	std::vector<Monster *> &monsters = DC->monsters;
-	for (size_t i = 0; i < monsters.size(); ++i)
-	{
-		if (monsters[i]->shape->overlap(*(DC->hero->shape)))
-		{
-			monsters[i]->HP = 0;
-		}
-	}
-}
 
 void OperationCenter::_update_character_porp(){
 	DataCenter *DC = DataCenter::get_instance();
@@ -133,9 +56,9 @@ void OperationCenter::_update_character_porp(){
 }
 
 void OperationCenter::draw() {
-	_draw_monster();
-	_draw_tower();
-	_draw_towerBullet();
+	//_draw_monster();
+	//_draw_tower();
+	//_draw_towerBullet();
 	_draw_prop();
 }
 
@@ -153,24 +76,6 @@ void OperationCenter::_draw_prop(){
 	props = props_new;
 }
 
-void OperationCenter::_draw_monster() {
-	std::vector<Monster*> &monsters = DataCenter::get_instance()->monsters;
-	for(Monster *monster : monsters)
-		monster->draw();
-}
-
-
-void OperationCenter::_draw_tower() {
-	std::vector<Tower*> &towers = DataCenter::get_instance()->towers;
-	for(Tower *tower : towers)
-		tower->draw();
-}
-
-void OperationCenter::_draw_towerBullet() {
-	std::vector<Bullet*> &towerBullets = DataCenter::get_instance()->towerBullets;
-	for(Bullet *towerBullet : towerBullets)
-		towerBullet->draw();
-}
 
 void OperationCenter::set_player_roles(int player1_role, int player2_role) {
     this->player1_role = player1_role;
@@ -280,7 +185,7 @@ void OperationCenter::_update_character12() {
 
 
 void OperationCenter::skill_damage(CharacterBase& caster, CharacterBase& target, double damage) {
-    target._set_HP(-damage - caster._get_ATKbias()); // 扣血
+    target._set_HP(-(damage + caster._get_ATKbias())); // 扣血
     std::cout << "Damage skill applied! Target HP: " << target._get_HP() << "\n";
 }
 
@@ -306,11 +211,11 @@ void OperationCenter::skill_SlowDown(CharacterBase& caster, CharacterBase& targe
 void OperationCenter::skill1(CharacterBase& caster, CharacterBase& target, int role_number){
 	if (role_number == 1) {
 		skill_freeze(caster, target, 2.0); // 凍住 2 秒
-		skill_damage(caster, target, 35); // 玩家2角色1使用攻擊1
+		skill_damage(caster, target, 40);
 	} else if (role_number == 2) {
 		skill_freeze(caster, target, 2.0); // 凍住 2 秒
 		skill_damage(caster, target, 40); // 玩家2攻擊玩家1，扣40血
-		skill_poison(caster, target, 1000);
+		
 	} else if (role_number == 3) {
 		skill_freeze(caster, target, 2.0); // 凍住 2 秒
 		skill_damage(caster, target, 45); // 玩家2角色3使用攻擊1
@@ -324,7 +229,9 @@ void OperationCenter::skill2(CharacterBase& caster, CharacterBase& target, int r
 	if (role_number == 1) {
 		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
 	} else if (role_number == 2) {
+		//skill_damage(caster, target, 35);
 		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+		skill_poison(caster, target, 1000);
 	} else if (role_number == 3) {
 		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
 	} else if (role_number == 4) {
@@ -350,8 +257,6 @@ void OperationCenter::skill3(CharacterBase& caster, CharacterBase& target, int r
 		}
 		caster._set_Rage(-1*caster._get_Rage());
 		return;
-		
-		
 	}
 
 	if (role_number == 1) {

@@ -43,22 +43,29 @@ public:
 private:
 	OperationCenter() {}
 private:
+	/*
 	void _update_monster();
 	void _update_tower();
 	void _update_towerBullet();
-	void _update_prop();
 
 	void _update_monster_towerBullet();
 	void _update_monster_player();
 	void _update_monster_hero();
+
+	void _draw_monster();
+	void _draw_tower();
+	void _draw_towerBullet();
+	*/
+	
+	void _update_prop();
+
+	
 	void _update_character_porp();
 	void _update_character12();
 	
 private:
 	void _draw_prop();
-	void _draw_monster();
-	void _draw_tower();
-	void _draw_towerBullet();
+	
 
 	int player1_role = 0; // 玩家1角色編號
     int player2_role = 0; // 玩家2角色編號

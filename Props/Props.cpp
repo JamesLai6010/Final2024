@@ -113,13 +113,13 @@ void Prop::Prop_effect(CharacterBase &CH){
 	{
 	//   void set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b); // for 外部設定
 	case PropsType::Healthy:
-		CH.set_effect_val(val, 0, 0, 0, 0);
+		CH.set_effect_val(100, 0, 0, 0, 0);
 		break;
 	case PropsType::Haste:
 		CH.set_effect_val(0, 100, val, 0, 0);
 		break;
 	case PropsType::Crit:
-		CH.set_effect_val(0, 0, 0, 50, val);
+		CH.set_effect_val(0, 0, 0, 0.5, val);
 	default:
 		break;
 	}
