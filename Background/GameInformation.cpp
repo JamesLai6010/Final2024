@@ -69,6 +69,9 @@ void BackgroundINF::update(){
         //std::cout << "1 sec past\n";
     }
     Time = std::max(0, Time); // 最小為0
+
+    player1_Shield = CH1._get_shield_value(); // 獲取角色1的護盾值
+    player2_Shield = CH2._get_shield_value(); // 獲取角色2的護盾值
 }
 
 void BackgroundINF::draw(){
@@ -83,6 +86,7 @@ void BackgroundINF::draw(){
     int ch2_health_bar = bar_width * ch2_healthy_percentage;
     int ch1_rage_bar = rage_bar * ch1_Rage_percentage;
     int ch2_rage_bar = rage_bar * ch2_Rage_percentage;
+    
     al_init_primitives_addon();
     
     
@@ -107,7 +111,19 @@ void BackgroundINF::draw(){
     algif_draw_gif(heart, 1600-heart->width, ch1_healthBar_center_y - heart->height / 2, 0);
     al_draw_bitmap(bolt, 1600-heart->width, ch1_healthBar_center_y * 2 - heart->height / 2, 0);
 
-    
+    double shield_bar = bar_width * 0.8; // 護盾條的寬度與怒氣條一致
+    double ch1_shield_percentage = player1_Shield / 200.0; // 假設最大護盾值為200
+    double ch2_shield_percentage = player2_Shield / 200.0;
+    // CH1 護盾條
+    if (player1_Shield > 0) {
+        al_draw_filled_rectangle(60 - 5, 30 + bar_height * 2 + 15, 60 + shield_bar + 5, 30 + bar_height * 3 + 20, al_map_rgb(255, 255, 255)); // 邊框
+        al_draw_filled_rectangle(60, 30 + bar_height * 2 + 20, 60 + shield_bar * ch1_shield_percentage, 30 + bar_height * 3 + 15, al_map_rgb(255, 255, 0)); // 護盾條
+    }
+    // CH2 護盾條
+    if (player2_Shield > 0) {
+        al_draw_filled_rectangle(1540 - shield_bar - 5, 30 + bar_height * 2 + 15, 1540 + 5, 30 + bar_height * 3 + 20, al_map_rgb(255, 255, 255)); // 邊框
+        al_draw_filled_rectangle(1540 - shield_bar * ch2_shield_percentage, 30 + bar_height * 2 + 20, 1540, 30 + bar_height * 3 + 15, al_map_rgb(255, 255, 0)); // 護盾條
+    }
 }
 /*
 	al_draw_bitmap(

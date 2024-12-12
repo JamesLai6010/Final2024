@@ -30,7 +30,10 @@ public:
     void skill_knockback(CharacterBase& caster, CharacterBase& target, double distance);
 	void skill_poison(CharacterBase& caster, CharacterBase& target, double time);
 	void skill_SlowDown(CharacterBase& caster, CharacterBase& target, double time);
-
+	void skill_freeze(CharacterBase& caster, CharacterBase& target, double duration);
+	//大招護盾
+	void skill_shield(CharacterBase& caster, double shield_value, double duration);
+	
 	void skill1(CharacterBase& caster, CharacterBase& target, int role_number);
 	void skill2(CharacterBase& caster, CharacterBase& target, int role_number);
 	void skill3(CharacterBase& caster, CharacterBase& target, int role_number);

@@ -34,6 +34,7 @@ public:
 		return &DC;
 	}
 	~DataCenter();
+	void reset();
 public:
 	double FPS;
 	int window_width, window_height;

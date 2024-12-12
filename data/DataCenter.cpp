@@ -63,3 +63,13 @@ DataCenter::~DataCenter() {
 		delete b;
 	}
 }
+
+void DataCenter::reset() {
+    // 重置遊戲數據的所有相關狀態
+    //player->reset(); // 玩家相關數據重置
+    character1->init(); // 角色1重新初始化
+    character2->init(); // 角色2重新初始化
+   	//monsters.clear(); // 清空怪物數據
+    //towers.clear();   // 清空塔數據
+    // 重置其他必要數據...
+}

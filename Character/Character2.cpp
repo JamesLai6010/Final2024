@@ -4,17 +4,17 @@
 
 void Character2::init() {
     
-    gifPath[CharacterState::WALK] = "Character2/Walk";
-    gifPath[CharacterState::ATTACK1] = "Character2/Attack1";
-    gifPath[CharacterState::ATTACK2] = "Character2/Attack2";
-    gifPath[CharacterState::ATTACK3] = "Character2/Attack3";
-    gifPath[CharacterState::SHIELD] = "Character2/Shield";
-    gifPath[CharacterState::RUN] = "Character2/Run";
-    gifPath[CharacterState::STOP] = "Character2/Stop";
-    gifPath[CharacterState::JUMP] = "Character2/Jump";
-    gifPath[CharacterState::HURT] = "Character2/Hurt";
-    gifPath[CharacterState::DEAD] = "Character2/Dead";
-
+    gifPath[CharacterState::WALK] = "./assets/gif/Character2/Walk.gif";
+    gifPath[CharacterState::ATTACK1] = "./assets/gif/Character2/Attack1.gif";
+    gifPath[CharacterState::ATTACK2] = "./assets/gif/Character2/Attack2.gif";
+    gifPath[CharacterState::ATTACK3] = "./assets/gif/Character2/Attack3.gif";
+    gifPath[CharacterState::SHIELD] = "./assets/gif/Character2/Shield.gif";
+    gifPath[CharacterState::RUN] = "./assets/gif/Character2/Run.gif";
+    gifPath[CharacterState::STOP] = "./assets/gif/Character2/Stop.gif";
+    gifPath[CharacterState::JUMP] = "./assets/gif/Character2/Jump.gif";
+    gifPath[CharacterState::HURT] = "./assets/gif/Character2/Hurt.gif";
+    gifPath[CharacterState::DEAD] = "./assets/gif/Character2/Dead.gif";
+    gifPath[CharacterState::FREEZE] = "./assets/gif/Character2/Ice.gif";
     initial_x = 1300;  // 角色 2 的初始位置
     initial_y = ground_level;
     is_facing_left = true;

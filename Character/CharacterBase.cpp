@@ -32,18 +32,14 @@ void CharacterBase::init() {
     GIFCenter* GIFC = GIFCenter::get_instance();
     DataCenter* DC = DataCenter::get_instance();
 
-    // 初始化 GIF 路徑
-    for (size_t i = 0; i < static_cast<size_t>(CharacterState::NONE); ++i) {
-        char buffer[100];
-        sprintf(buffer, "./assets/gif/%s.gif", gifPath[static_cast<CharacterState>(i)].c_str());
-        gifPath[static_cast<CharacterState>(i)] = std::string(buffer);
-    }
 
     // 加載狀態動畫
     hp_effect_animation = GIFC->get("./assets/gif/minecraft_effect4.gif");
     speed_effect_animation = GIFC->get("./assets/gif/Speed_effect.gif");
     atk_effect_animation = GIFC->get("./assets/gif/minecraft_effect2.gif");
     hit_animation = GIFC->get("./assets/gif/Hit.gif");
+    shield_animation = GIFC->get("./assets/gif/Shield.gif");
+
 
     // 加載初始動畫 (靜止)
     current_animation = GIFC->get(gifPath[CharacterState::STOP]);
@@ -70,6 +66,22 @@ void CharacterBase::set_state(CharacterState new_state) {
         } else {
             current_animation = GIFC->get(gifPath[state]);
         }
+        std::string s;
+            if (state == CharacterState::WALK) s = "WALK";
+            else if (state == CharacterState::RUN) s = "RUN";
+            else if (state == CharacterState::JUMP) s = "JUMP";
+            else if (state == CharacterState::ATTACK1) s = "ATTACK1";
+            else if (state == CharacterState::ATTACK2) s = "ATTACK2";
+            else if (state == CharacterState::ATTACK3) s = "ATTACK3";
+            else if (state == CharacterState::STOP) s = "STOP";
+            else if (state == CharacterState::SHIELD) s = "SHIELD";
+            else if (state == CharacterState::HURT) s = "HURT";
+            else if (state == CharacterState::DEAD) s = "DEAD";
+            else if (state == CharacterState::SLIDE) s = "SLIDE";
+            else if (state == CharacterState::FREEZE) s = "FREEZE";
+            else if (state == CharacterState::NONE) s = "NONE";
+            else s = "UNKNOWN";
+        std::cout << "<Player State> : set to " << s << std::endl;
         update_bounding_box();
     }
 }
@@ -84,28 +96,167 @@ void CharacterBase::set_key_mapping(int left, int right, int jump, int attack1, 
     key_shield = shield;
 }
 
+// void CharacterBase::update() {
+//     DataCenter* DC = DataCenter::get_instance();
+    
+//     //是否被凍住
+//     update_freeze();
+
+//     if (Speed_timer <= 0){
+//         Speed_timer = 0;
+//         speed_bias = 0;
+//     }else{
+//         Speed_timer -= 1;
+//     }
+//     if (Atk_timer <= 0){
+//         Atk_timer = 0;
+//         Atk_bias = 0;
+//     }else{
+//         Atk_timer -= 1;
+//     }
+//     if (Hp_timer <= 0) Hp_timer = 0;
+//     else Hp_timer -= 1 / 60.0;
+
+//      // **防止在 SHIELD 狀態下水平移動**
+//      double now_speed = (is_slow_down)? 2:(speed+speed_bias);
+//     if (state != CharacterState::SHIELD) {
+//         // 水平移動處理（即使在攻擊狀態下仍允許移動）
+//         if (DC->key_state[key_right]) {
+//             shape->update_center_x(shape->center_x() + now_speed);
+//             is_facing_left = false; // 面向右
+//             if (!is_attacking && !is_jumping) {
+//                 set_state(CharacterState::WALK);
+//             }
+//         } else if (DC->key_state[key_left]) {
+//             shape->update_center_x(shape->center_x() - now_speed);
+//             is_facing_left = true; // 面向左
+//             if (!is_attacking && !is_jumping) {
+//                 set_state(CharacterState::WALK);
+//             }
+//         } else if (!is_attacking && !is_jumping && !is_hurting) {
+//             set_state(CharacterState::STOP); // 停止狀態
+//         }
+//     }
+//     // 攻擊狀態計時
+//     if (is_attacking) {
+//         attack_timer -= 1.0 / 60.0; // 減少攻擊計時器
+//         if (attack_timer <= 0) {
+//             is_attacking = false; // 攻擊結束
+//             set_state(CharacterState::STOP); // 返回停止狀態
+//         }
+//     }
+//     // 處理攻擊按鍵
+//     // 攻擊和防禦邏輯處理（按鍵對應不同動畫）
+//     if (!is_attacking) {
+//         if (DC->key_state[key_attack1]) {
+//             set_state(CharacterState::ATTACK1);
+//             is_attacking = true;
+//             attack_timer = attack_duration; // 設定 ATTACK1 動畫持續時間
+//             Rage += 5; // 若打到應該會加更多
+//         } else if (DC->key_state[key_attack2]) {
+//             set_state(CharacterState::ATTACK2);
+//             is_attacking = true;
+//             attack_timer = attack_duration; // 設定 ATTACK2 動畫持續時間
+//             Rage += 5;
+//         } else if (DC->key_state[key_attack3]) {
+//             set_state(CharacterState::ATTACK3);
+//             is_attacking = true;
+//             attack_timer = attack_duration; // 設定 ATTACK3 動畫持續時間
+//             Rage += 5;
+//         } else if (DC->key_state[key_shield]) {
+//             set_state(CharacterState::SHIELD);
+//             is_attacking = true;
+//             attack_timer = shield_duration; // 設定防禦持續時間
+//             //Rage += 10; // 同樣，若成功阻擋加更多
+//         }
+//     }
+//     Rage = std::min(Rage, (double)100);
+
+//     // 處理跳躍邏輯
+//     if (is_jumping) {
+//         // 更新垂直速度（加入重力影響）
+//         vertical_velocity += gravity * (1.0 / 60.0); // 假設 60FPS
+//         shape->update_center_y(shape->center_y() + vertical_velocity); // 根據速度更新垂直位置
+
+//         // 檢查是否到達地面
+//         if (shape->center_y() >= ground_level) {
+//             shape->update_center_y(ground_level); // 修正位置到地面
+//             is_jumping = false;                  // 停止跳躍狀態
+//             vertical_velocity = 0;               // 重置速度
+//             set_state(CharacterState::STOP);    // 回到停止狀態
+//         }
+//     }
+
+//     // 處理跳躍按鍵
+//     if (!is_jumping && DC->key_state[key_jump]) {
+//         is_jumping = true;
+//         vertical_velocity = -jump_initial_velocity; // 跳躍初速度（負值表示向上）
+//         set_state(CharacterState::JUMP);  // 切換到跳躍狀態
+//     } 
+
+
+//     if (is_hurting) {
+//         hurt_timer -= 1.0 / 60.0; // 減少攻擊計時器
+//         //printf("hurt: timer %f\n",hurt_timer);
+//         if (hurt_timer <= 0) {
+//             is_hurting = false; // 攻擊結束
+//             set_state(CharacterState::STOP); // 返回停止狀態
+//         }
+//     }
+//     if (is_slow_down){
+//         slow_down_timer -= 1.0 / 60.0;
+//         if (slow_down_timer <= 0){
+//             is_slow_down = false;
+//         }
+//     }
+
+//     if (is_poisoned){
+//         poison_timer -= 1;
+//         if (poison_timer <= 0){
+//             is_poisoned = false;
+//         }
+//         if ((int)poison_timer%2)
+//             HP -= 0.1;
+//     }
+
+//     // 更新滑行過程
+//     if (sliding) {
+//         update_knockback();
+//         slide_timer -= 1.0 / 60.0; // 減少攻擊計時器
+//         //printf("hurt: timer ")
+//         if (hurt_timer <= 0) {
+//             sliding = false; // 攻擊結束
+//             set_state(CharacterState::STOP); // 返回停止狀態
+//         } 
+//     }
+
+//     float current_x = shape->center_x();
+//     if (current_x < 0) {
+//         shape->update_center_x(0); // 修正到左邊界
+//     } else if (current_x > 1600) {
+//         shape->update_center_x(1600); // 修正到右邊界
+//     }
+// }
 void CharacterBase::update() {
     DataCenter* DC = DataCenter::get_instance();
-    
-    if (Speed_timer <= 0){
-        Speed_timer = 0;
-        speed_bias = 0;
-    }else{
-        Speed_timer -= 1;
+    Rage = std::min(Rage, 100.0); // 限制 Rage 最大值
+    // 更新凍住狀態
+    update_freeze();
+    update_shield();
+    // 如果角色被凍住，僅阻止行為更新，但允許效果計時器繼續更新
+    if (is_frozen) {
+        update_shield();
+        update_effects(); // 更新狀態效果計時器
+        return;
     }
-    if (Atk_timer <= 0){
-        Atk_timer = 0;
-        Atk_bias = 0;
-    }else{
-        Atk_timer -= 1;
-    }
-    if (Hp_timer <= 0) Hp_timer = 0;
-    else Hp_timer -= 1 / 60.0;
 
-     // **防止在 SHIELD 狀態下水平移動**
-     double now_speed = (is_slow_down)? 2:(speed+speed_bias);
+    // 更新效果計時器
+    update_effects();
+
+    // 處理移動與行為邏輯
+    double now_speed = (is_slow_down) ? 2 : (speed + speed_bias);
     if (state != CharacterState::SHIELD) {
-        // 水平移動處理（即使在攻擊狀態下仍允許移動）
+        // 水平移動
         if (DC->key_state[key_right]) {
             shape->update_center_x(shape->center_x() + now_speed);
             is_facing_left = false; // 面向右
@@ -122,104 +273,141 @@ void CharacterBase::update() {
             set_state(CharacterState::STOP); // 停止狀態
         }
     }
-    // 攻擊狀態計時
+
+    // 攻擊邏輯
     if (is_attacking) {
-        attack_timer -= 1.0 / 60.0; // 減少攻擊計時器
+        attack_timer -= 1.0 / 60.0;
         if (attack_timer <= 0) {
-            is_attacking = false; // 攻擊結束
+            is_attacking = false;
             set_state(CharacterState::STOP); // 返回停止狀態
         }
+    } else {
+        handle_attack_input(DC); // 處理攻擊輸入
     }
-    // 處理攻擊按鍵
-    // 攻擊和防禦邏輯處理（按鍵對應不同動畫）
-    if (!is_attacking) {
-        if (DC->key_state[key_attack1]) {
-            set_state(CharacterState::ATTACK1);
-            is_attacking = true;
-            attack_timer = attack_duration; // 設定 ATTACK1 動畫持續時間
-            Rage += 5; // 若打到應該會加更多
-        } else if (DC->key_state[key_attack2]) {
-            set_state(CharacterState::ATTACK2);
-            is_attacking = true;
-            attack_timer = attack_duration; // 設定 ATTACK2 動畫持續時間
-            Rage += 5;
-        } else if (DC->key_state[key_attack3]) {
-            set_state(CharacterState::ATTACK3);
-            is_attacking = true;
-            attack_timer = attack_duration; // 設定 ATTACK3 動畫持續時間
-            Rage += 5;
-        } else if (DC->key_state[key_shield]) {
-            set_state(CharacterState::SHIELD);
-            is_attacking = true;
-            attack_timer = shield_duration; // 設定防禦持續時間
-            //Rage += 10; // 同樣，若成功阻擋加更多
-        }
-    }
-    Rage = std::min(Rage, (double)100);
 
     // 處理跳躍邏輯
-    if (is_jumping) {
-        // 更新垂直速度（加入重力影響）
-        vertical_velocity += gravity * (1.0 / 60.0); // 假設 60FPS
-        shape->update_center_y(shape->center_y() + vertical_velocity); // 根據速度更新垂直位置
+    handle_jump_logic(DC);
 
-        // 檢查是否到達地面
-        if (shape->center_y() >= ground_level) {
-            shape->update_center_y(ground_level); // 修正位置到地面
-            is_jumping = false;                  // 停止跳躍狀態
-            vertical_velocity = 0;               // 重置速度
-            set_state(CharacterState::STOP);    // 回到停止狀態
+    // 更新滑行
+    if (sliding) {
+        update_knockback();
+        slide_timer -= 1.0 / 60.0;
+        if (slide_timer <= 0) {
+            sliding = false;
+            set_state(CharacterState::STOP);
         }
     }
 
-    // 處理跳躍按鍵
-    if (!is_jumping && DC->key_state[key_jump]) {
-        is_jumping = true;
-        vertical_velocity = -jump_initial_velocity; // 跳躍初速度（負值表示向上）
-        set_state(CharacterState::JUMP);  // 切換到跳躍狀態
-    } 
+    // 邊界檢查
+    enforce_boundaries();
+}
 
-
-    if (is_hurting) {
-        hurt_timer -= 1.0 / 60.0; // 減少攻擊計時器
-        //printf("hurt: timer %f\n",hurt_timer);
-        if (hurt_timer <= 0) {
-            is_hurting = false; // 攻擊結束
-            set_state(CharacterState::STOP); // 返回停止狀態
-        }
+//各項效果
+void CharacterBase::update_effects() {
+    // 更新速度加成效果
+    if (Speed_timer > 0) {
+        Speed_timer -= 1;
+    } else {
+        Speed_timer = 0;
+        speed_bias = 0;
     }
-    if (is_slow_down){
+
+    // 更新攻擊加成效果
+    if (Atk_timer > 0) {
+        Atk_timer -= 1;
+    } else {
+        Atk_timer = 0;
+        Atk_bias = 0;
+    }
+
+    // 更新生命回復效果
+    if (Hp_timer > 0) {
+        Hp_timer -= 1 / 60.0;
+    } else {
+        Hp_timer = 0;
+    }
+
+    // 更新緩速效果
+    if (is_slow_down) {
         slow_down_timer -= 1.0 / 60.0;
-        if (slow_down_timer <= 0){
+        if (slow_down_timer <= 0) {
             is_slow_down = false;
         }
     }
 
-    if (is_poisoned){
+    // 更新中毒效果
+    if (is_poisoned) {
         poison_timer -= 1;
-        if (poison_timer <= 0){
+        if (poison_timer <= 0) {
             is_poisoned = false;
         }
-        if ((int)poison_timer%2)
-            HP -= 0.1;
+        if ((int)poison_timer % 2) {
+            HP -= 0.1; // 每秒扣血
+        }
     }
 
-    // 更新滑行過程
-    if (sliding) {
-        update_knockback();
-        slide_timer -= 1.0 / 60.0; // 減少攻擊計時器
-        //printf("hurt: timer ")
+    // 更新受傷效果
+    if (is_hurting) {
+        hurt_timer -= 1.0 / 60.0;
         if (hurt_timer <= 0) {
-            sliding = false; // 攻擊結束
-            set_state(CharacterState::STOP); // 返回停止狀態
-        } 
+            is_hurting = false; // 受傷狀態結束
+            //set_state(CharacterState::STOP); // 回到停止狀態
+        }
     }
+}
 
+
+//處理攻擊
+void CharacterBase::handle_attack_input(DataCenter* DC) {
+    if (DC->key_state[key_attack1]) {
+        set_state(CharacterState::ATTACK1);
+        is_attacking = true;
+        attack_timer = attack_duration;
+        Rage += 5;
+    } else if (DC->key_state[key_attack2]) {
+        set_state(CharacterState::ATTACK2);
+        is_attacking = true;
+        attack_timer = attack_duration;
+        Rage += 5;
+    } else if (DC->key_state[key_attack3]) {
+        set_state(CharacterState::ATTACK3);
+        is_attacking = true;
+        attack_timer = attack_duration;
+        Rage += 5;
+    } else if (DC->key_state[key_shield]) {
+        set_state(CharacterState::SHIELD);
+        is_attacking = true;
+        attack_timer = shield_duration;
+    }
+}
+//處理跳躍
+void CharacterBase::handle_jump_logic(DataCenter* DC) {
+    if (is_jumping) {
+        // 更新垂直速度（加入重力影響）
+        vertical_velocity += gravity * (1.0 / 60.0);
+        shape->update_center_y(shape->center_y() + vertical_velocity);
+
+        // 檢查是否到達地面
+        if (shape->center_y() >= ground_level) {
+            shape->update_center_y(ground_level);
+            is_jumping = false;
+            vertical_velocity = 0;
+            set_state(CharacterState::STOP);
+        }
+    } else if (DC->key_state[key_jump]) {
+        is_jumping = true;
+        vertical_velocity = -jump_initial_velocity;
+        set_state(CharacterState::JUMP);
+    }
+}
+
+//處理邊界
+void CharacterBase::enforce_boundaries() {
     float current_x = shape->center_x();
     if (current_x < 0) {
-        shape->update_center_x(0); // 修正到左邊界
+        shape->update_center_x(0);
     } else if (current_x > 1600) {
-        shape->update_center_x(1600); // 修正到右邊界
+        shape->update_center_x(1600);
     }
 }
 
@@ -259,6 +447,12 @@ void CharacterBase::draw() {
         float effect_y = shape->center_y() - (hit_animation->height * scale_y) / 2 + 30;
         algif_draw_gif(hit_animation, effect_x, effect_y, 0);
     }
+
+    if (shield_value > 0) {
+        float effect_x = shape->center_x() - (shield_animation->width * scale_x) / 2;
+        float effect_y = shape->center_y() - (shield_animation->height * scale_y) / 2;
+        algif_draw_gif(shield_animation, effect_x, effect_y, 0);
+    }
 }
 // 設定藥水效果
 void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b){
@@ -275,7 +469,7 @@ void CharacterBase::reset_gif_paths(const std::map<CharacterState, std::string>&
     // 格式化並更新 GIF 路徑
     gifPath.clear();
     for (const auto& [state, base_path] : new_gif_paths) {
-        gifPath[state] = "./assets/gif/" + base_path + ".gif";
+        gifPath[state] = base_path;
     }
     
     // 重置當前動畫為靜止狀態的 GIF
@@ -298,7 +492,8 @@ double CharacterBase::_get_ATKtimer()const{
 }
 
 double CharacterBase::_set_HP(double hp){
-    HP += hp;
+    if (shield_value > 0) shield_value += hp;
+    else HP += hp;
 }
 double CharacterBase::_set_Rage(double rage){
     Rage += rage;
@@ -349,4 +544,78 @@ void CharacterBase::_set_Rage_status(bool b){
 void CharacterBase::_set_Slowdown(bool b, double t){
     is_slow_down = true;
     slow_down_timer = t;
+}
+//冰凍
+void CharacterBase::_set_freeze(bool frozen, double duration) {
+    is_frozen = frozen;
+    freeze_timer = duration;
+    if (frozen) {
+        set_state(CharacterState::FREEZE); // 凍住時角色狀態設為停止
+    }
+}
+
+void CharacterBase::update_freeze() {
+    if (is_frozen) {
+        freeze_timer -= 1.0 / 60.0; // 每幀減少凍住時間（假設 60FPS）
+        if (freeze_timer <= 0) {
+            is_frozen = false; // 凍住結束
+            std::cout << "Freeze effect ended. Target is now free to move.\n";
+            set_state(CharacterState::STOP);
+        } else {
+            // 確保狀態保持在 FREEZE
+            if (state != CharacterState::FREEZE) {
+                set_state(CharacterState::FREEZE);
+            }
+        }
+    }
+}
+
+bool CharacterBase::_is_frozen() const {
+    return is_frozen;
+}
+
+//護盾
+void CharacterBase::_set_shield(double shield_value, double duration) {
+    this->shield_value = shield_value;
+    this->shield_timer = duration;
+    this->is_shielded = true;
+    std::cout << "Shield activated with " << shield_value << " HP for " << duration << " seconds.\n";
+}
+
+void CharacterBase::update_shield() {
+    if (is_shielded) {
+        shield_timer -= 1.0 / 60.0; // 假設 60FPS
+        if (shield_timer <= 0 || shield_value <= 0) {
+            is_shielded = false; // 護盾結束
+            shield_value = 0;
+            std::cout << "Shield expired.\n";
+        }
+    }
+}
+
+//重製所有參數
+void CharacterBase::reset() {
+    HP = 1000;
+    Rage = 0;
+    state = CharacterState::STOP;
+    is_facing_left = false;
+    is_attacking = false;
+    is_jumping = false;
+    is_hurting = false;
+    is_poisoned = false;
+    sliding = false;
+    is_slow_down = false;
+    is_shielded = false;
+    is_frozen = false;
+    attack_timer = 0.0;
+    shield_timer = 0.0;
+    hurt_timer = 0.0;
+
+    // 重置位置
+    shape->update_center_x(initial_x);
+    shape->update_center_y(initial_y);
+
+    // 重新加載動畫
+    GIFCenter* GIFC = GIFCenter::get_instance();
+    current_animation = GIFC->get(gifPath[CharacterState::STOP]);
 }

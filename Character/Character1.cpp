@@ -5,15 +5,17 @@
 
 void Character1::init() {
     // 設定角色 1 的 GIF 路徑
-    gifPath[CharacterState::WALK] = "Character1/Walk";
-    gifPath[CharacterState::RUN] = "Character1/Run";
-    gifPath[CharacterState::JUMP] = "Character1/Jump";
-    gifPath[CharacterState::ATTACK1] = "Character1/Attack1";
-    gifPath[CharacterState::ATTACK2] = "Character1/Attack2";
-    gifPath[CharacterState::ATTACK3] = "Character1/Attack3";
-    gifPath[CharacterState::STOP] = "Character1/Stop";
-    gifPath[CharacterState::SHIELD] = "Character1/Shield";
-    gifPath[CharacterState::DEAD] = "Character1/Dead";
+    gifPath[CharacterState::WALK] = "./assets/gif/Character2/Walk.gif";
+    gifPath[CharacterState::ATTACK1] = "./assets/gif/Character2/Attack1.gif";
+    gifPath[CharacterState::ATTACK2] = "./assets/gif/Character2/Attack2.gif";
+    gifPath[CharacterState::ATTACK3] = "./assets/gif/Character2/Attack3.gif";
+    gifPath[CharacterState::SHIELD] = "./assets/gif/Character2/Shield.gif";
+    gifPath[CharacterState::RUN] = "./assets/gif/Character2/Run.gif";
+    gifPath[CharacterState::STOP] = "./assets/gif/Character2/Stop.gif";
+    gifPath[CharacterState::JUMP] = "./assets/gif/Character2/Jump.gif";
+    gifPath[CharacterState::HURT] = "./assets/gif/Character2/Hurt.gif";
+    gifPath[CharacterState::DEAD] = "./assets/gif/Character2/Dead.gif";
+    gifPath[CharacterState::FREEZE] = "./assets/gif/Character2/Ice.gif";
 
     // 初始位置
     initial_x = 300;

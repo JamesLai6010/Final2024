@@ -44,6 +44,9 @@ class BackgroundINF: public Object{
         std::vector<int> Random_Num;
         int rand_idx;
 
+        double player1_Shield;
+        double player2_Shield;
+
 };
 
 #endif 

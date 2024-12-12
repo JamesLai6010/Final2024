@@ -10,6 +10,7 @@ class Prop_God: public Object{
     Prop_God(int);
     void draw(); // 0
     void update(); // gen
+    void clear_all_props(); // 新增清除方法
 
 
     private:

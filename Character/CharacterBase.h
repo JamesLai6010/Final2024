@@ -6,6 +6,7 @@
 #include "../Object.h"
 #include "../algif5/algif.h"
 #include <allegro5/allegro_primitives.h>
+#include "../data/DataCenter.h"
 
 // 通用角色狀態
 enum class CharacterState {
@@ -20,9 +21,11 @@ enum class CharacterState {
     HURT,
     DEAD,
     SLIDE,
+    FREEZE,
     NONE
 };
 
+class DataCenter;
 
 // 角色基類
 class CharacterBase : public Object {
@@ -61,6 +64,26 @@ public:
     double _get_ATKbias();
     void _set_Rage_status(bool );
     void _set_Slowdown(bool, double);
+    //freeze
+    void _set_freeze(bool frozen, double duration); // 設置凍住狀態
+    void update_freeze();                           // 更新凍住邏輯
+    bool _is_frozen() const;                        // 返回是否凍住
+    //護盾大招
+    void _set_shield(double shield_value, double duration);
+    void update_shield();
+    bool _is_shielded() const { return is_shielded; }
+    double _get_shield_value() const { return shield_value; }
+
+    //角色移動相關
+    void enforce_boundaries();   //邊界
+    void handle_jump_logic(DataCenter* DC);  //jump
+    void handle_attack_input(DataCenter* DC);  //attack
+    void update_effects();   //效果
+
+    //重新玩
+    void reset();
+
+
 protected:  
 
 
@@ -73,6 +96,7 @@ protected:
     ALGIF_ANIMATION* speed_effect_animation = nullptr; // 速度效果動畫
     ALGIF_ANIMATION* atk_effect_animation = nullptr;   // 攻擊效果動畫
     ALGIF_ANIMATION* hit_animation = nullptr;
+    ALGIF_ANIMATION* shield_animation = nullptr;
 
     // 角色參數
     double HP = 1000;
@@ -88,7 +112,14 @@ protected:
     bool is_Rage_status = false;
     bool is_slow_down = false;
 
+    bool is_frozen = false;        // 是否凍住
+    double freeze_timer = 0.0;     // 凍住持續時間
     double slow_down_timer;
+
+    //護盾
+    double shield_value = 0;       // 護盾值
+    double shield_timer = 0;       // 護盾持續時間
+    bool is_shielded = false;      // 是否啟用護盾
 
     double slide_distance;
     double slide_direction;

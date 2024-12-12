@@ -14,7 +14,7 @@ public:
     void game_init();
     bool game_update();
     void game_draw();
-
+    void reset_game();
     //角色選擇
     void apply_character_selection();
     void set_player_roles();
@@ -100,6 +100,8 @@ private:
     Button play_button; // 選完角色的按鈕
 
     bool sceneSelectionBGM = false;
+    bool gameBGM = false;
+    bool victoryBGM = false;
 private:
     ALLEGRO_DISPLAY *display;
     ALLEGRO_TIMER *timer;

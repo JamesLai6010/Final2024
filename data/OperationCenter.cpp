@@ -192,34 +192,36 @@ void OperationCenter::_update_character12() {
 	}
 	bool ch1_isAttack = (CH1._get_state() == CharacterState::ATTACK1 || CH1._get_state() == CharacterState::ATTACK2 || CH1._get_state() == CharacterState::ATTACK3);
 	bool ch2_isAttack = (CH2._get_state() == CharacterState::ATTACK1 || CH2._get_state() == CharacterState::ATTACK2 || CH2._get_state() == CharacterState::ATTACK3);
-	if (!(ch1_isAttack || ch2_isAttack)){return;}
+
+	if (!(ch1_isAttack || ch2_isAttack)) {return;} // 沒有角色攻擊，直接返回
 	
-	// 檢查方向使否對
-	if (!((CH1._get_dir() == true && CH2._get_dir() == false)||(CH1._get_dir() == false && CH2._get_dir() == true))){
-		if (CH1._get_dir() == true && CH2._get_dir() == true){
-			if (ch1_isAttack && CH1.shape->center_x() < CH2.shape->center_x())ch1_isAttack = 0;
-			if (ch2_isAttack && CH2.shape->center_x() < CH1.shape->center_x())ch2_isAttack = 0;
-		}if (CH1._get_dir() == false && CH2._get_dir() == false){
-			if (ch1_isAttack && CH1.shape->center_x() > CH2.shape->center_x())ch1_isAttack = 0;
-			if (ch2_isAttack && CH2.shape->center_x() > CH1.shape->center_x())ch2_isAttack = 0;
-		}
-	}
-	// 檢查距離對不對
-	if ((CH1._get_dir() == true && CH2._get_dir() == false)){
-		if (!(CH1.shape->center_x() >= CH2.shape->center_x()))return;
-	}else{
-		if (!(CH1.shape->center_x() <= CH2.shape->center_x()))return;
-	}
+
+	// 角色方向輸出（便於調試）
+	//std::cout << "CH1 Facing " << (CH1._get_dir() ? "LEFT" : "RIGHT") << std::endl;
+	//std::cout << "CH2 Facing " << (CH2._get_dir() ? "LEFT" : "RIGHT") << std::endl;
+
+	// 攻擊方向和位置檢查
+	bool ch1_valid = ch1_isAttack && 
+		((CH1._get_dir() && CH1.shape->center_x() >= CH2.shape->center_x()) || // CH1 面向左，且 CH2 在左
+        (!CH1._get_dir() && CH1.shape->center_x() < CH2.shape->center_x()));  // CH1 面向右，且 CH2 在右邊
+
+	bool ch2_valid = ch2_isAttack && 
+		((CH2._get_dir() && CH2.shape->center_x() >= CH1.shape->center_x()) || // CH2 面向左，且 CH1 在左
+        (!CH2._get_dir() && CH2.shape->center_x() < CH1.shape->center_x()));  // CH2 面向右，且 CH1 在右邊
+
+	if (ch1_valid) std::cout << "CH1 attack CH2!" << std::endl;
+	if (ch2_valid) std::cout << "CH2 attack CH1!" << std::endl;
+    
 	// 處理同時攻擊的狀況
-	if (ch1_isAttack && ch2_isAttack){
+	if (ch2_valid && ch1_valid){
 		int x = (*DC->background_inf)._get_random_num();
 		if (x%2){ // ch1_isAttack;
-			ch2_isAttack = false;
+			ch2_valid = false;
 		}else{
-			ch1_isAttack = false;
+			ch1_valid = false;
 		}
 	}
-	if (ch1_isAttack){
+	if (ch1_valid){
 		if (CH2._get_state() == CharacterState::SHIELD){
 			if (CH1._get_ATKtimer() - 0.5 != 0)return;
 			CH2._set_Rage(20);
@@ -233,7 +235,7 @@ void OperationCenter::_update_character12() {
 			CH1.attack_opponent(CH2);
 			CH2.set_state(CharacterState::HURT);
 		}
-	}else if (ch2_isAttack){
+	}else if (ch2_valid){
 		if (CH1._get_state() == CharacterState::SHIELD){
 			if (CH2._get_ATKtimer() - 0.5 != 0)return;
 			CH1._set_Rage(20);
@@ -248,7 +250,7 @@ void OperationCenter::_update_character12() {
 			CH1.set_state(CharacterState::HURT);
 		}
 	}
-	if (ch1_isAttack) {
+	if (ch1_valid) {
 		std::cout << "Player 1 is attacking!" << std::endl;
 		CharacterState current_state = CH1._get_state();
         if (current_state == CharacterState::ATTACK1) {
@@ -260,7 +262,7 @@ void OperationCenter::_update_character12() {
 		}
     }
 
-    if (ch2_isAttack) {
+    if (ch2_valid) {
 		std::cout << "Player 2 is attacking!" << std::endl;
     	CharacterState current_state = CH2._get_state();
 		if (current_state == CharacterState::ATTACK1) {
@@ -303,13 +305,17 @@ void OperationCenter::skill_SlowDown(CharacterBase& caster, CharacterBase& targe
 
 void OperationCenter::skill1(CharacterBase& caster, CharacterBase& target, int role_number){
 	if (role_number == 1) {
+		skill_freeze(caster, target, 2.0); // 凍住 2 秒
 		skill_damage(caster, target, 35); // 玩家2角色1使用攻擊1
 	} else if (role_number == 2) {
+		skill_freeze(caster, target, 2.0); // 凍住 2 秒
 		skill_damage(caster, target, 40); // 玩家2攻擊玩家1，扣40血
 		skill_poison(caster, target, 1000);
 	} else if (role_number == 3) {
+		skill_freeze(caster, target, 2.0); // 凍住 2 秒
 		skill_damage(caster, target, 45); // 玩家2角色3使用攻擊1
 	} else if (role_number == 4) {
+		skill_freeze(caster, target, 2.0); // 凍住 2 秒
 		skill_damage(caster, target, 55); // 玩家2角色4使用攻擊1
 	}
 }
@@ -330,15 +336,19 @@ void OperationCenter::skill3(CharacterBase& caster, CharacterBase& target, int r
 	if (caster._get_Rage() >= 100){
 		
 		if (role_number == 1) {
+			skill_shield(caster, 200, 5.0); // 為自己提供150護盾值，持續5秒
 			skill_SlowDown(caster, target, 3);
 		} else if (role_number == 2) {
+			skill_shield(caster, 200, 5.0); // 為自己提供150護盾值，持續5秒
 			skill_SlowDown(caster, target, 3);
 		} else if (role_number == 3) {
+			skill_shield(caster, 200, 5.0); // 為自己提供150護盾值，持續5秒
 			skill_SlowDown(caster, target, 3);
 		} else if (role_number == 4) {
+			skill_shield(caster, 200, 5.0); // 為自己提供150護盾值，持續5秒
 			skill_SlowDown(caster, target, 3);
 		}
-		caster._set_Rage(0);
+		caster._set_Rage(-1*caster._get_Rage());
 		return;
 		
 		
@@ -354,3 +364,17 @@ void OperationCenter::skill3(CharacterBase& caster, CharacterBase& target, int r
 		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
 	}
 }
+
+//冰凍
+void OperationCenter::skill_freeze(CharacterBase& caster, CharacterBase& target, double duration) {
+    target._set_freeze(true, duration);  // 設置目標為凍住狀態並設定持續時間
+    std::cout << "Freeze skill applied! Target is frozen for " << duration << " seconds.\n";
+}
+
+
+void OperationCenter::skill_shield(CharacterBase& caster, double shield_value, double duration) {
+    caster._set_shield(shield_value, duration); // 為角色設置護盾值與持續時間
+    std::cout << "Shield skill activated! Value: " << shield_value << ", Duration: " << duration << " seconds.\n";
+}
+
+

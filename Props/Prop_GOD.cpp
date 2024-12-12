@@ -63,3 +63,9 @@ void Prop_God::update(){
     //std::cout << "Prop vector size: " << DC->props.size() <<"\n";
     return;
 }
+
+void Prop_God::clear_all_props() {
+    DataCenter *DC = DataCenter::get_instance();
+    DC->props.clear(); // 清空道具向量
+    std::cout << "All props have been cleared!" << std::endl;
+}

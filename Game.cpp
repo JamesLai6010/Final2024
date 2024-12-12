@@ -47,7 +47,9 @@ constexpr char playbtn_img_path[] = "./assets/image/play_btn.png";
 
 constexpr char click_sound_path[] = "./assets/sound/click.mp3";
 constexpr char mainPage_sound_path[] = "./assets/sound/mainPage.mp3";
-constexpr char sceneSelect_sound_path[] = "./assets/sound/sceneSelect.mp3";
+constexpr char sceneSelect_sound_path[] = "./assets/sound/select.mp3";
+constexpr char victory_sound_path[] = "./assets/sound/victory.mp3";
+constexpr char game_sound_path[] = "./assets/sound/game.mp3";
 
 constexpr char win1_img_path[] = "./assets/image/WIN_IMG/win1.jpg";
 constexpr char win2_img_path[] = "./assets/image/WIN_IMG/win2.jpg";
@@ -249,8 +251,8 @@ Game::game_init() {
 
 	select_character.push_back({character1, mid_x - 500, mid_y - 430, 300, 430, false, 1, 0});
 	select_character.push_back({character2, mid_x + 200, mid_y - 430, 300, 430, false, 2, 0});
-	select_character.push_back({character3, mid_x - 500, mid_y, 300, 430, false, 3, 0});
-	select_character.push_back({character4, mid_x + 200, mid_y, 300, 430, false, 4, 0});
+	select_character.push_back({character3, mid_x - 150, mid_y, 300, 430, false, 3, 0});
+	//select_character.push_back({character4, mid_x + 200, mid_y, 300, 430, false, 4, 0});
 
 	// 定義按鈕範圍（例：Start Game 按鈕）
     start_button = {577, 447, 1027, 561, "Start Game"};
@@ -273,9 +275,13 @@ Game::game_update() {
 	static ALLEGRO_SAMPLE_INSTANCE *click = nullptr;
 	static ALLEGRO_SAMPLE_INSTANCE *mainPage = nullptr;
 	static ALLEGRO_SAMPLE_INSTANCE *sceneSelect = nullptr;
+	static ALLEGRO_SAMPLE_INSTANCE *gamebackgroundBGM = nullptr;
+	static ALLEGRO_SAMPLE_INSTANCE *victorySceneBGM = nullptr;
 	switch(state) {
 		case STATE::MAIN_MENU: { // 主頁邏輯
 			sceneSelectionBGM = false;
+			gameBGM = false;
+			victoryBGM = false;
             if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
 				printf("mouse_x = %lf mouse_y = %lf\n", DC->mouse.x, DC->mouse.y);
                 if (DC->mouse.x >= start_button.x1 && DC->mouse.x <= start_button.x2 &&
@@ -406,6 +412,7 @@ Game::game_update() {
 				debug_log("Player 1 Name: %s\n", player1_name.c_str());
     			debug_log("Player 2 Name: %s\n", player2_name.c_str());
 				set_player_roles();
+				
         		state = STATE::LEVEL;
 				DC->background_inf->_set_time();
    			}
@@ -415,6 +422,7 @@ Game::game_update() {
                     DC->mouse.y >= 810 && DC->mouse.y <= 880) {
 					click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                     debug_log("<Game> state: change to SCENE_SELECTION\n");
+					gameBGM = false;
                     state = STATE::SCENE_SELECTION; // 切換狀態
                 }
             }
@@ -427,15 +435,9 @@ Game::game_update() {
 			DC->prop_god->update();
 			DC->background_inf->update();
 
-			
-			
-			
-			
-
-			static bool BGM_played = false;
-			if(!BGM_played) {
-				background = SC->play(background_sound_path, ALLEGRO_PLAYMODE_LOOP);
-				BGM_played = true;
+			if (!gameBGM) {
+    			gamebackgroundBGM = SC->play(game_sound_path, ALLEGRO_PLAYMODE_LOOP);
+    			gameBGM = true;
 			}
 
 			if(DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
@@ -462,16 +464,23 @@ Game::game_update() {
 				}else{
 					player1_win = false;
 				}
-				
+				SC->toggle_playing(gamebackgroundBGM);
+				DC->prop_god->clear_all_props();
+				victoryBGM = false;
 				state = STATE::Fight_FINISH;
 			}
 			break;
 		} 
 		case STATE::Fight_FINISH:{
-			
-
+			if(!victoryBGM) {
+				victorySceneBGM = SC->play(victory_sound_path, ALLEGRO_PLAYMODE_LOOP);
+				victoryBGM = true;
+			}
 			if (DC->key_state[ALLEGRO_KEY_ENTER] && !DC->prev_key_state[ALLEGRO_KEY_ENTER]){
-				state = STATE::END;
+				SC->toggle_playing(victorySceneBGM);
+				SC->toggle_playing(mainPage);
+				reset_game(); // 重新初始化遊戲
+				state = STATE::MAIN_MENU;
 			}
 			break;
 		}
@@ -702,7 +711,7 @@ void Game::game_draw() {
 			}
 			al_draw_text(FC->SuperMarioBros[FontSize::XXL], al_map_rgb(255, 255, 255), 800, 200, ALLEGRO_ALIGN_CENTER, txt);
 
-			al_draw_text(FC->SuperMarioBros[FontSize::LARGE], al_map_rgb(250, 255, 20), 800, 800, ALLEGRO_ALIGN_CENTER, "PRESS ENTER TO EXIT");
+			al_draw_text(FC->SuperMarioBros[FontSize::LARGE], al_map_rgb(250, 255, 20), 800, 800, ALLEGRO_ALIGN_CENTER, "PRESS ENTER TO MAIN");
 			break;
 		}
         case STATE::PAUSE: {
@@ -739,59 +748,108 @@ void Game::apply_character_selection() {
     // 玩家1選擇角色
     if (player1_character.number == 1) {
         DC->character1->reset_gif_paths({
-            {CharacterState::WALK, "Character1/Walk"},
-            {CharacterState::RUN, "Character1/Run"},
-            {CharacterState::JUMP, "Character1/Jump"},
-            {CharacterState::ATTACK1, "Character1/Attack1"},
-            {CharacterState::ATTACK2, "Character1/Attack2"},
-            {CharacterState::ATTACK3, "Character1/Attack3"},
-            {CharacterState::STOP, "Character1/Stop"},
-            {CharacterState::SHIELD, "Character1/Shield"},
-            {CharacterState::HURT, "Character1/Hurt"},
-            {CharacterState::DEAD, "Character1/Dead"}
+            {CharacterState::WALK, "./assets/gif/Character1/Walk.gif"},
+            {CharacterState::RUN, "./assets/gif/Character1/Run.gif"},
+            {CharacterState::JUMP, "./assets/gif/Character1/Jump.gif"},
+            {CharacterState::ATTACK1, "./assets/gif/Character1/Attack1.gif"},
+            {CharacterState::ATTACK2, "./assets/gif/Character1/Attack2.gif"},
+            {CharacterState::ATTACK3, "./assets/gif/Character1/Attack3.gif"},
+            {CharacterState::STOP, "./assets/gif/Character1/Stop.gif"},
+            {CharacterState::SHIELD, "./assets/gif/Character1/Shield.gif"},
+            {CharacterState::HURT, "./assets/gif/Character1/Hurt.gif"},
+            {CharacterState::DEAD, "./assets/gif/Character1/Dead.gif"},
+			{CharacterState::FREEZE, "./assets/gif/Character1/Ice.gif"}
         });
-    } else if (player1_character.number >= 2) {    //之後有3、4
+    } else if (player1_character.number == 2) {    //之後有3、4
         DC->character1->reset_gif_paths({
-            {CharacterState::WALK, "Character2/Walk"},
-            {CharacterState::RUN, "Character2/Run"},
-            {CharacterState::JUMP, "Character2/Jump"},
-            {CharacterState::ATTACK1, "Character2/Attack1"},
-            {CharacterState::ATTACK2, "Character2/Attack2"},
-            {CharacterState::ATTACK3, "Character2/Attack3"},
-            {CharacterState::STOP, "Character2/Stop"},
-            {CharacterState::SHIELD, "Character2/Shield"},
-            {CharacterState::HURT, "Character2/Hurt"},
-            {CharacterState::DEAD, "Character2/Dead"}
+            {CharacterState::WALK, "./assets/gif/Character2/Walk.gif"},
+            {CharacterState::RUN, "./assets/gif/Character2/Run.gif"},
+            {CharacterState::JUMP, "./assets/gif/Character2/Jump.gif"},
+            {CharacterState::ATTACK1, "./assets/gif/Character2/Attack1.gif"},
+            {CharacterState::ATTACK2, "./assets/gif/Character2/Attack2.gif"},
+            {CharacterState::ATTACK3, "./assets/gif/Character2/Attack3.gif"},
+            {CharacterState::STOP, "./assets/gif/Character2/Stop.gif"},
+            {CharacterState::SHIELD, "./assets/gif/Character2/Shield.gif"},
+            {CharacterState::HURT, "./assets/gif/Character2/Hurt.gif"},
+            {CharacterState::DEAD, "./assets/gif/Character2/Dead.gif"},
+			{CharacterState::FREEZE, "./assets/gif/Character2/Ice.gif"}
         });
-    }
+    } else if (player1_character.number == 3) {    //之後有3、4
+        DC->character1->reset_gif_paths({
+            {CharacterState::WALK, "./assets/gif/Character3/Walk.gif"},
+            {CharacterState::RUN, "./assets/gif/Character3/Run.gif"},
+            {CharacterState::JUMP, "./assets/gif/Character3/Jump.gif"},
+            {CharacterState::ATTACK1, "./assets/gif/Character3/Attack1.gif"},
+            {CharacterState::ATTACK2, "./assets/gif/Character3/Attack2.gif"},
+            {CharacterState::ATTACK3, "./assets/gif/Character3/Attack3.gif"},
+            {CharacterState::STOP, "./assets/gif/Character3/Stop.gif"},
+            {CharacterState::SHIELD, "./assets/gif/Character3/Shield.gif"},
+            {CharacterState::HURT, "./assets/gif/Character3/Hurt.gif"},
+            {CharacterState::DEAD, "./assets/gif/Character3/Dead.gif"},
+			{CharacterState::FREEZE, "./assets/gif/Character3/Ice.gif"}
+        });
+	}
 
     // 玩家2選擇角色
     if (player2_character.number == 1) {
         DC->character2->reset_gif_paths({
-            {CharacterState::WALK, "Character1/Walk"},
-            {CharacterState::RUN, "Character1/Run"},
-            {CharacterState::JUMP, "Character1/Jump"},
-            {CharacterState::ATTACK1, "Character1/Attack1"},
-            {CharacterState::ATTACK2, "Character1/Attack2"},
-            {CharacterState::ATTACK3, "Character1/Attack3"},
-            {CharacterState::STOP, "Character1/Stop"},
-            {CharacterState::SHIELD, "Character1/Shield"},
-            {CharacterState::HURT, "Character1/Hurt"},
-            {CharacterState::DEAD, "Character1/Dead"}
+            {CharacterState::WALK, "./assets/gif/Character1/Walk.gif"},
+            {CharacterState::RUN, "./assets/gif/Character1/Run.gif"},
+            {CharacterState::JUMP, "./assets/gif/Character1/Jump.gif"},
+            {CharacterState::ATTACK1, "./assets/gif/Character1/Attack1.gif"},
+            {CharacterState::ATTACK2, "./assets/gif/Character1/Attack2.gif"},
+            {CharacterState::ATTACK3, "./assets/gif/Character1/Attack3.gif"},
+            {CharacterState::STOP, "./assets/gif/Character1/Stop.gif"},
+            {CharacterState::SHIELD, "./assets/gif/Character1/Shield.gif"},
+            {CharacterState::HURT, "./assets/gif/Character1/Hurt.gif"},
+            {CharacterState::DEAD, "./assets/gif/Character1/Dead.gif"},
+			{CharacterState::FREEZE, "./assets/gif/Character1/Ice.gif"}
         });
-    } else if (player2_character.number >= 2) {
+    } else if (player2_character.number == 2) {
         DC->character2->reset_gif_paths({
-            {CharacterState::WALK, "Character2/Walk"},
-            {CharacterState::RUN, "Character2/Run"},
-            {CharacterState::JUMP, "Character2/Jump"},
-            {CharacterState::ATTACK1, "Character2/Attack1"},
-            {CharacterState::ATTACK2, "Character2/Attack2"},
-            {CharacterState::ATTACK3, "Character2/Attack3"},
-            {CharacterState::STOP, "Character2/Stop"},
-            {CharacterState::SHIELD, "Character2/Shield"},
-            {CharacterState::HURT, "Character2/Hurt"},
-            {CharacterState::DEAD, "Character2/Dead"}
+            {CharacterState::WALK, "./assets/gif/Character2/Walk.gif"},
+            {CharacterState::RUN, "./assets/gif/Character2/Run.gif"},
+            {CharacterState::JUMP, "./assets/gif/Character2/Jump.gif"},
+            {CharacterState::ATTACK1, "./assets/gif/Character2/Attack1.gif"},
+            {CharacterState::ATTACK2, "./assets/gif/Character2/Attack2.gif"},
+            {CharacterState::ATTACK3, "./assets/gif/Character2/Attack3.gif"},
+            {CharacterState::STOP, "./assets/gif/Character2/Stop.gif"},
+            {CharacterState::SHIELD, "./assets/gif/Character2/Shield.gif"},
+            {CharacterState::HURT, "./assets/gif/Character2/Hurt.gif"},
+            {CharacterState::DEAD, "./assets/gif/Character2/Dead.gif"},
+			{CharacterState::FREEZE, "./assets/gif/Character2/Ice.gif"}
         });
-    }
+    } else if (player2_character.number == 3) {    //之後有3、4
+        DC->character2->reset_gif_paths({
+            {CharacterState::WALK, "./assets/gif/Character3/Walk.gif"},
+            {CharacterState::RUN, "./assets/gif/Character3/Run.gif"},
+            {CharacterState::JUMP, "./assets/gif/Character3/Jump.gif"},
+            {CharacterState::ATTACK1, "./assets/gif/Character3/Attack1.gif"},
+            {CharacterState::ATTACK2, "./assets/gif/Character3/Attack2.gif"},
+            {CharacterState::ATTACK3, "./assets/gif/Character3/Attack3.gif"},
+            {CharacterState::STOP, "./assets/gif/Character3/Stop.gif"},
+            {CharacterState::SHIELD, "./assets/gif/Character3/Shield.gif"},
+            {CharacterState::HURT, "./assets/gif/Character3/Hurt.gif"},
+            {CharacterState::DEAD, "./assets/gif/Character3/Dead.gif"},
+			{CharacterState::FREEZE, "./assets/gif/Character3/Ice.gif"}
+        });
+	}
 }
 
+
+void Game::reset_game() {
+    DataCenter* DC = DataCenter::get_instance();
+    OperationCenter* OC = OperationCenter::get_instance();
+	DC->character1->reset();
+	DC->character2->reset();
+    // 重設遊戲狀態
+    state = STATE::MAIN_MENU; // 返回主選單
+    player1_win = false;
+    no_winner = false;
+
+
+    // 重置數據中心
+    //DC->reset();
+    // 重置操作中心狀態
+    //OC->reset();
+}
