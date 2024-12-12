@@ -26,9 +26,14 @@ public:
 	void draw();
 
 	// 技能函數
-    void skill1_damage(CharacterBase& caster, CharacterBase& target, double damage);
-    void skill1_knockback(CharacterBase& caster, CharacterBase& target, double distance);
-	void skill1_poison(CharacterBase& caster, CharacterBase& target, double time);
+    void skill_damage(CharacterBase& caster, CharacterBase& target, double damage);
+    void skill_knockback(CharacterBase& caster, CharacterBase& target, double distance);
+	void skill_poison(CharacterBase& caster, CharacterBase& target, double time);
+	void skill_SlowDown(CharacterBase& caster, CharacterBase& target, double time);
+
+	void skill1(CharacterBase& caster, CharacterBase& target, int role_number);
+	void skill2(CharacterBase& caster, CharacterBase& target, int role_number);
+	void skill3(CharacterBase& caster, CharacterBase& target, int role_number);
 
 	void set_player_roles(int player1_role, int player2_role);
 

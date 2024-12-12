@@ -59,6 +59,8 @@ public:
     void set_slide_timer(double t);
     void _set_poisonTimer(double t);
     double _get_ATKbias();
+    void _set_Rage_status(bool );
+    void _set_Slowdown(bool, double);
 protected:  
 
 
@@ -83,6 +85,10 @@ protected:
     bool is_hurting = false;
     bool is_poisoned = false;
     bool sliding = false;
+    bool is_Rage_status = false;
+    bool is_slow_down = false;
+
+    double slow_down_timer;
 
     double slide_distance;
     double slide_direction;

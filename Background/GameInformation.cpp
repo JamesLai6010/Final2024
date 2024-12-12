@@ -66,7 +66,7 @@ void BackgroundINF::update(){
         start = now;
         Time--;
         Time_change_flag = true;
-        std::cout << "1 sec past\n";
+        //std::cout << "1 sec past\n";
     }
     Time = std::max(0, Time); // 最小為0
 }

@@ -102,17 +102,18 @@ void CharacterBase::update() {
     if (Hp_timer <= 0) Hp_timer = 0;
     else Hp_timer -= 1 / 60.0;
 
-     // **防止在 SHIELD 狀態下水平移動**    
+     // **防止在 SHIELD 狀態下水平移動**
+     double now_speed = (is_slow_down)? 2:(speed+speed_bias);
     if (state != CharacterState::SHIELD) {
         // 水平移動處理（即使在攻擊狀態下仍允許移動）
         if (DC->key_state[key_right]) {
-            shape->update_center_x(shape->center_x() + speed + speed_bias);
+            shape->update_center_x(shape->center_x() + now_speed);
             is_facing_left = false; // 面向右
             if (!is_attacking && !is_jumping) {
                 set_state(CharacterState::WALK);
             }
         } else if (DC->key_state[key_left]) {
-            shape->update_center_x(shape->center_x() - speed - speed_bias);
+            shape->update_center_x(shape->center_x() - now_speed);
             is_facing_left = true; // 面向左
             if (!is_attacking && !is_jumping) {
                 set_state(CharacterState::WALK);
@@ -151,7 +152,7 @@ void CharacterBase::update() {
             set_state(CharacterState::SHIELD);
             is_attacking = true;
             attack_timer = shield_duration; // 設定防禦持續時間
-            Rage += 10; // 同樣，若成功阻擋加更多
+            //Rage += 10; // 同樣，若成功阻擋加更多
         }
     }
     Rage = std::min(Rage, (double)100);
@@ -185,6 +186,12 @@ void CharacterBase::update() {
         if (hurt_timer <= 0) {
             is_hurting = false; // 攻擊結束
             set_state(CharacterState::STOP); // 返回停止狀態
+        }
+    }
+    if (is_slow_down){
+        slow_down_timer -= 1.0 / 60.0;
+        if (slow_down_timer <= 0){
+            is_slow_down = false;
         }
     }
 
@@ -335,3 +342,11 @@ void CharacterBase::_set_poisonTimer(double t){
     is_poisoned = true;
 }
 
+void CharacterBase::_set_Rage_status(bool b){
+    is_Rage_status = b;
+}
+
+void CharacterBase::_set_Slowdown(bool b, double t){
+    is_slow_down = true;
+    slow_down_timer = t;
+}

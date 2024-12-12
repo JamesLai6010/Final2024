@@ -210,18 +210,18 @@ void OperationCenter::_update_character12() {
 	}else{
 		if (!(CH1.shape->center_x() <= CH2.shape->center_x()))return;
 	}
-	
+	// 處理同時攻擊的狀況
 	if (ch1_isAttack && ch2_isAttack){
 		int x = (*DC->background_inf)._get_random_num();
 		if (x%2){ // ch1_isAttack;
-			CH2.set_state(CharacterState::HURT);
-			CH1.attack_opponent(CH2);
+			ch2_isAttack = false;
 		}else{
-			CH1.set_state(CharacterState::HURT);
-			CH2.attack_opponent(CH1);
+			ch1_isAttack = false;
 		}
-	}else if (ch1_isAttack){
+	}
+	if (ch1_isAttack){
 		if (CH2._get_state() == CharacterState::SHIELD){
+			if (CH1._get_ATKtimer() - 0.5 != 0)return;
 			CH2._set_Rage(20);
 			return;
 		}
@@ -235,6 +235,7 @@ void OperationCenter::_update_character12() {
 		}
 	}else if (ch2_isAttack){
 		if (CH1._get_state() == CharacterState::SHIELD){
+			if (CH2._get_ATKtimer() - 0.5 != 0)return;
 			CH1._set_Rage(20);
 			return;
 		}
@@ -251,85 +252,37 @@ void OperationCenter::_update_character12() {
 		std::cout << "Player 1 is attacking!" << std::endl;
 		CharacterState current_state = CH1._get_state();
         if (current_state == CharacterState::ATTACK1) {
-			if (player1_role == 1) {
-				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
-			} else if (player1_role == 2) {
-				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
-				skill1_poison(CH1, CH2, 1000);
-			} else if (player2_role == 3) {
-				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
-			} else if (player2_role == 4) {
-				skill1_damage(CH1, CH2, 40); // 玩家2攻擊玩家1，扣40血
-			}
+			skill1(CH1, CH2, player1_role);
 		} else if (current_state == CharacterState::ATTACK2) {
-			if (player1_role == 1) {
-				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
-			} else if (player1_role == 2) {
-				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
-			} else if (player2_role == 3) {
-				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
-			} else if (player2_role == 4) {
-				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
-			}
+			skill2(CH1, CH2, player1_role);
 		} else if (current_state == CharacterState::ATTACK3) {
-			if (player1_role == 1) {
-				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
-			} else if (player1_role == 2) {
-				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
-			} else if (player2_role == 3) {
-				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
-			} else if (player2_role == 4) {
-				skill1_knockback(CH1, CH2, 200.0); // 距離 100，速度 10
-			}
+			skill3(CH1, CH2, player1_role);
 		}
     }
 
     if (ch2_isAttack) {
 		std::cout << "Player 2 is attacking!" << std::endl;
     	CharacterState current_state = CH2._get_state();
-    if (current_state == CharacterState::ATTACK1) {
-        if (player2_role == 1) {
-            skill1_damage(CH2, CH1, 35); // 玩家2角色1使用攻擊1
-        } else if (player2_role == 2) {
-            skill1_damage(CH2, CH1, 40); // 玩家2攻擊玩家1，扣40血
-			skill1_poison(CH2, CH1, 1000);
-        } else if (player2_role == 3) {
-            skill1_damage(CH2, CH1, 45); // 玩家2角色3使用攻擊1
-        } else if (player2_role == 4) {
-            skill1_damage(CH2, CH1, 55); // 玩家2角色4使用攻擊1
-        }
-    } else if (current_state == CharacterState::ATTACK2) {
-        if (player2_role == 1) {
-            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
-        } else if (player2_role == 2) {
-            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
-        } else if (player2_role == 3) {
-            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
-        } else if (player2_role == 4) {
-            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
-        }
-    } else if (current_state == CharacterState::ATTACK3) {
-        if (player2_role == 1) {
-            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
-        } else if (player2_role == 2) {
-            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
-        } else if (player2_role == 3) {
-            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
-        } else if (player2_role == 4) {
-            skill1_knockback(CH2, CH1, 200.0); // 距離 100，速度 10
-        }
-    }
+		if (current_state == CharacterState::ATTACK1) {
+			skill1(CH2, CH1, player2_role);
+		} else if (current_state == CharacterState::ATTACK2) {
+			skill2(CH2, CH1, player2_role);
+		} else if (current_state == CharacterState::ATTACK3) {
+			skill3(CH2, CH1, player2_role);
+		}
 	
 	}
 }
 
 
-void OperationCenter::skill1_damage(CharacterBase& caster, CharacterBase& target, double damage) {
+
+
+void OperationCenter::skill_damage(CharacterBase& caster, CharacterBase& target, double damage) {
     target._set_HP(-damage - caster._get_ATKbias()); // 扣血
     std::cout << "Damage skill applied! Target HP: " << target._get_HP() << "\n";
 }
 
-void OperationCenter::skill1_knockback(CharacterBase& caster, CharacterBase& target, double distance) {
+void OperationCenter::skill_knockback(CharacterBase& caster, CharacterBase& target, double distance) {
     double direction = (caster._get_dir() ? -1 : 1); // 根據方向決定滑行方向
 
     // 初始化滑行狀態
@@ -340,7 +293,64 @@ void OperationCenter::skill1_knockback(CharacterBase& caster, CharacterBase& tar
     std::cout << "Knockback started! Distance: " << distance << ", Direction: " << direction << std::endl;
 }
 
-void OperationCenter::skill1_poison(CharacterBase& caster, CharacterBase& target, double time){
+void OperationCenter::skill_poison(CharacterBase& caster, CharacterBase& target, double time){
 	target._set_poisonTimer(time);
 }
 
+void OperationCenter::skill_SlowDown(CharacterBase& caster, CharacterBase& target, double time){
+	target._set_Slowdown(true, time);
+}
+
+void OperationCenter::skill1(CharacterBase& caster, CharacterBase& target, int role_number){
+	if (role_number == 1) {
+		skill_damage(caster, target, 35); // 玩家2角色1使用攻擊1
+	} else if (role_number == 2) {
+		skill_damage(caster, target, 40); // 玩家2攻擊玩家1，扣40血
+		skill_poison(caster, target, 1000);
+	} else if (role_number == 3) {
+		skill_damage(caster, target, 45); // 玩家2角色3使用攻擊1
+	} else if (role_number == 4) {
+		skill_damage(caster, target, 55); // 玩家2角色4使用攻擊1
+	}
+}
+
+void OperationCenter::skill2(CharacterBase& caster, CharacterBase& target, int role_number){
+	if (role_number == 1) {
+		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+	} else if (role_number == 2) {
+		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+	} else if (role_number == 3) {
+		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+	} else if (role_number == 4) {
+		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+	}
+}
+
+void OperationCenter::skill3(CharacterBase& caster, CharacterBase& target, int role_number){
+	if (caster._get_Rage() >= 100){
+		
+		if (role_number == 1) {
+			skill_SlowDown(caster, target, 3);
+		} else if (role_number == 2) {
+			skill_SlowDown(caster, target, 3);
+		} else if (role_number == 3) {
+			skill_SlowDown(caster, target, 3);
+		} else if (role_number == 4) {
+			skill_SlowDown(caster, target, 3);
+		}
+		caster._set_Rage(0);
+		return;
+		
+		
+	}
+
+	if (role_number == 1) {
+		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+	} else if (role_number == 2) {
+		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+	} else if (role_number == 3) {
+		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+	} else if (role_number == 4) {
+		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+	}
+}
