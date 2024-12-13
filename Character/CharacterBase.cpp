@@ -4,7 +4,10 @@
 #include <stdexcept>
 #include "../shapes/Rectangle.h"
 #include "../data/GIFCenter.h"
+#include "../data/SoundCenter.h"
 #include <iostream>
+
+constexpr char minecraftHit_sound_path[] = "./assets/sound/MinecraftHit.mp3";
 
 void CharacterBase::update_bounding_box() {
     if (current_animation) {
@@ -31,7 +34,7 @@ void CharacterBase::set_scale(double sx, double sy) {
 void CharacterBase::init() {
     GIFCenter* GIFC = GIFCenter::get_instance();
     DataCenter* DC = DataCenter::get_instance();
-
+    SoundCenter *SC = SoundCenter::get_instance();
 
     // 加載狀態動畫
     hp_effect_animation = GIFC->get("./assets/gif/minecraft_effect4.gif");
@@ -55,9 +58,11 @@ void CharacterBase::init() {
 }
 
 void CharacterBase::set_state(CharacterState new_state) {
+    SoundCenter *SC = SoundCenter::get_instance();
     if (state != new_state) {
         state = new_state;
         if (state == CharacterState::HURT) {
+            SC->play(minecraftHit_sound_path, ALLEGRO_PLAYMODE_ONCE);
             hurt_timer = hurt_duration;
             is_hurting = true;
         }
