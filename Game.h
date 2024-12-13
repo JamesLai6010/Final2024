@@ -2,6 +2,7 @@
 #define GAME_H_INCLUDED
 
 #include <allegro5/allegro.h>
+#include "./algif5/algif.h"
 #include "UI.h"
 
 class Game
@@ -28,7 +29,9 @@ private:
         END,
         CHARACTER_SELECTION,  // 角色選擇
         SCENE_SELECTION,  // 場景選擇
-        Fight_FINISH
+        Fight_FINISH,
+        COUNTDOWN,
+        KO
     };
     STATE state;
 
@@ -44,14 +47,17 @@ private:
 	ALLEGRO_BITMAP *character2;
     ALLEGRO_BITMAP *character3;
     ALLEGRO_BITMAP *character4;
-
+    ALLEGRO_BITMAP *countdown;
     ALLEGRO_BITMAP *win_map1;
     ALLEGRO_BITMAP *win_map2;
     ALLEGRO_BITMAP *win_map3;
     ALLEGRO_BITMAP *win_map4;
     ALLEGRO_BITMAP *win_map5;
-
     ALLEGRO_BITMAP *playbtn;
+    ALGIF_ANIMATION* koGIF = nullptr;
+    ALGIF_ANIMATION* ch1DEAD_GIF = nullptr;
+    ALGIF_ANIMATION* ch2DEAD_GIF = nullptr;
+    ALGIF_ANIMATION* ch3DEAD_GIF = nullptr;
     struct Button { // 按鈕結構體
         double x1, y1, x2, y2;   // 按鈕範圍
         const char *label;    // 按鈕文字
@@ -102,6 +108,11 @@ private:
     bool sceneSelectionBGM = false;
     bool gameBGM = false;
     bool victoryBGM = false;
+    bool countdownBGM = false;
+    bool koBGM = false;
+    double countdown_timer = 3;
+    bool start_countdown = false;
+    double ko_timer = 3;
 private:
     ALLEGRO_DISPLAY *display;
     ALLEGRO_TIMER *timer;

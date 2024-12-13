@@ -5,6 +5,7 @@
 #include "data/SoundCenter.h"
 #include "data/ImageCenter.h"
 #include "data/FontCenter.h"
+#include "data/GIFCenter.h"
 #include "Player.h"
 #include "Level.h"
 #include "Hero.h"  //快龍實作
@@ -36,7 +37,7 @@ constexpr char sceneSelection_img_path[] = "./assets/image/SelectScene.jpg";
 constexpr char background1_img_path[] = "./assets/image/background1.png";
 constexpr char background2_img_path[] = "./assets/image/background2.jpg";
 constexpr char background3_img_path[] = "./assets/image/background3.jpg";
-
+constexpr char countdown_img_path[] = "./assets/image/countdown.png";
 
 constexpr char character1_img_path[] = "./assets/image/character1.png";
 constexpr char character2_img_path[] = "./assets/image/character2.png";
@@ -50,6 +51,8 @@ constexpr char mainPage_sound_path[] = "./assets/sound/mainPage.mp3";
 constexpr char sceneSelect_sound_path[] = "./assets/sound/select.mp3";
 constexpr char victory_sound_path[] = "./assets/sound/victory.mp3";
 constexpr char game_sound_path[] = "./assets/sound/game.mp3";
+constexpr char countdown_sound_path[] = "./assets/sound/countdown.mp3";
+constexpr char ko_sound_path[] = "./assets/sound/gameover.mp3";
 
 constexpr char win1_img_path[] = "./assets/image/WIN_IMG/win1.jpg";
 constexpr char win2_img_path[] = "./assets/image/WIN_IMG/win2.jpg";
@@ -57,6 +60,10 @@ constexpr char win3_img_path[] = "./assets/image/WIN_IMG/win3.jpg";
 constexpr char win4_img_path[] = "./assets/image/WIN_IMG/win4.jpg";
 constexpr char win5_img_path[] = "./assets/image/WIN_IMG/win.jpg";
 
+constexpr char ko_gif_path[] = "./assets/gif/KO.gif";
+constexpr char character1_dead_gif_path[] = "./assets/gif/Character1/Dead1.gif";
+constexpr char character2_dead_gif_path[] = "./assets/gif/Character2/Dead1.gif";
+constexpr char character3_dead_gif_path[] = "./assets/gif/Character3/Dead1.gif";
 /**
  * @brief Game entry.
  * @details The function processes all allegro events and update the event state to a generic data storage (i.e. DataCenter).
@@ -187,6 +194,7 @@ Game::game_init() {
     SoundCenter *SC = SoundCenter::get_instance();
     ImageCenter *IC = ImageCenter::get_instance();
     FontCenter *FC = FontCenter::get_instance();
+	GIFCenter *GIFC = GIFCenter::get_instance();
 
     // Set window icon
     game_icon = IC->get(game_icon_img_path);
@@ -221,14 +229,18 @@ Game::game_init() {
     background1 = IC->get(background1_img_path);
 	background2 = IC->get(background2_img_path);
 	background3 = IC->get(background3_img_path);
-
+	countdown = IC->get(countdown_img_path);
 	// 場景圖
 	character1 = IC->get(character1_img_path);
 	character2 = IC->get(character2_img_path);
 	character3 = IC->get(character3_img_path);
 	character4 = IC->get(character4_img_path);
 
-	// win img
+	koGIF = GIFC->get(ko_gif_path);
+	ch1DEAD_GIF = GIFC->get(character1_dead_gif_path);
+	ch2DEAD_GIF = GIFC->get(character2_dead_gif_path);
+	ch3DEAD_GIF = GIFC->get(character3_dead_gif_path);
+	// win img	
 	win_map1 = IC->get(win1_img_path);
 	win_map2 = IC->get(win2_img_path);
 	win_map3 = IC->get(win3_img_path);
@@ -277,11 +289,15 @@ Game::game_update() {
 	static ALLEGRO_SAMPLE_INSTANCE *sceneSelect = nullptr;
 	static ALLEGRO_SAMPLE_INSTANCE *gamebackgroundBGM = nullptr;
 	static ALLEGRO_SAMPLE_INSTANCE *victorySceneBGM = nullptr;
+	static ALLEGRO_SAMPLE_INSTANCE *countdownSound = nullptr;
+	static ALLEGRO_SAMPLE_INSTANCE *koSound = nullptr;
 	switch(state) {
 		case STATE::MAIN_MENU: { // 主頁邏輯
 			sceneSelectionBGM = false;
 			gameBGM = false;
 			victoryBGM = false;
+			countdownBGM = false;
+			koBGM = false;
             if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
 				printf("mouse_x = %lf mouse_y = %lf\n", DC->mouse.x, DC->mouse.y);
                 if (DC->mouse.x >= start_button.x1 && DC->mouse.x <= start_button.x2 &&
@@ -296,7 +312,8 @@ Game::game_update() {
                     DC->mouse.y >= 767 && DC->mouse.y <= 880) {
 						click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
                    		debug_log("<Game> state: change to END\n");
-						state = STATE::END; // 切換狀態
+						return false;
+						//state = STATE::END; // 切換狀態
 				}
             }
 
@@ -403,7 +420,7 @@ Game::game_update() {
         		DC->mouse_state[1] && !DC->prev_mouse_state[1] &&
         		DC->mouse.x >= play_button.x1 && DC->mouse.x <= play_button.x2 &&
         		DC->mouse.y >= play_button.y1 && DC->mouse.y <= play_button.y2 && player2_name_done) {
-        		debug_log("<Game> state: change to LEVEL\n");
+        		debug_log("<Game> state: change to COUNTDOWN\n");
         		apply_character_selection();
 				//之後加入分配技能
         		click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
@@ -412,9 +429,10 @@ Game::game_update() {
 				debug_log("Player 1 Name: %s\n", player1_name.c_str());
     			debug_log("Player 2 Name: %s\n", player2_name.c_str());
 				set_player_roles();
-				
-        		state = STATE::LEVEL;
-				DC->background_inf->_set_time();
+				countdown_timer = 3.0;
+				start_countdown = true;
+        		state = STATE::COUNTDOWN;
+				//DC->background_inf->_set_time();
    			}
 			//back to last scene
 			if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
@@ -426,6 +444,21 @@ Game::game_update() {
                     state = STATE::SCENE_SELECTION; // 切換狀態
                 }
             }
+			break;
+		}
+		case STATE::COUNTDOWN: {
+    		if (start_countdown) countdown_timer -= 1.0/60.0;
+			if (!countdownBGM) {
+        		countdownSound = SC->play(countdown_sound_path, ALLEGRO_PLAYMODE_ONCE);        countdownBGM = true;
+			}
+			debug_log("<COUNTDOWN_TIMER> %lf\n", countdown_timer);
+    		if (countdown_timer <= -0.5) {
+				start_countdown = false;
+        		state = STATE::LEVEL;               // 切換到 LEVEL 狀態
+        		debug_log("<Game> state: change to LEVEL\n");
+        		DC->background_inf->_set_time();    // 初始化時間
+        		gameBGM = false;                    // 確保遊戲背景音樂會在 LEVEL 播放
+    		}
 			break;
 		}
 		case STATE::LEVEL: {    //遊戲進行中的地方
@@ -440,11 +473,11 @@ Game::game_update() {
     			gameBGM = true;
 			}
 
-			if(DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
-				SC->toggle_playing(background);
-				debug_log("<Game> state: change to PAUSE\n");
-				state = STATE::PAUSE;
-			}
+			// if(DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
+			// 	SC->toggle_playing(background);
+			// 	debug_log("<Game> state: change to PAUSE\n");
+			// 	state = STATE::PAUSE;
+			// }
 			// if(DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) {
 			// 	debug_log("<Game> state: change to END\n");
 			// 	state = STATE::END;
@@ -467,11 +500,26 @@ Game::game_update() {
 				SC->toggle_playing(gamebackgroundBGM);
 				DC->prop_god->clear_all_props();
 				victoryBGM = false;
+				koBGM = false;
+				if (!no_winner) {
+					ko_timer = 3.0;
+					state = STATE::KO;
+				} else {
+					state = STATE::Fight_FINISH;
+				}
+			}
+			break;
+		} case STATE::KO:{
+    		ko_timer -= 1.0 / 60.0;
+			if (!koBGM) {
+        		koSound = SC->play(ko_sound_path, ALLEGRO_PLAYMODE_ONCE);
+				koBGM = true;
+			}
+			if (ko_timer <= 0) {
 				state = STATE::Fight_FINISH;
 			}
 			break;
-		} 
-		case STATE::Fight_FINISH:{
+		} case STATE::Fight_FINISH:{
 			if(!victoryBGM) {
 				victorySceneBGM = SC->play(victory_sound_path, ALLEGRO_PLAYMODE_LOOP);
 				victoryBGM = true;
@@ -646,9 +694,17 @@ void Game::game_draw() {
 
 			break;
 		}
-        case STATE::START: {
-            al_draw_bitmap(background1, 0, 0, 0);
-            break;
+        case STATE::COUNTDOWN: {
+            al_draw_bitmap(countdown, 0, 0, 0);
+    		if (countdown_timer >= -0.5) {
+        		char countdown_text[10];
+        		sprintf(countdown_text, "%d", static_cast<int>(std::ceil(countdown_timer)));
+        		al_draw_text(
+            		FC->SuperMarioBros[FontSize::XXL], al_map_rgb(255, 255, 255),
+            		DC->window_width / 2, DC->window_height / 2 - FontSize::XXL / 2,
+            		ALLEGRO_ALIGN_CENTER, countdown_text);
+    		}
+			break;
         }
         case STATE::LEVEL: {
             // 遊戲繪製邏輯
@@ -681,6 +737,41 @@ void Game::game_draw() {
 			OC->draw();
             break;
         }
+		case STATE::KO:{
+			if (scene_number == 1) {
+				al_draw_bitmap(background1, 0, 0, 0);
+			} else if (scene_number == 2) {
+				al_draw_bitmap(background2, 0, 0, 0);
+			} else if (scene_number == 3) {
+				al_draw_bitmap(background3, 0, 0, 0);
+			}
+
+			algif_draw_gif(koGIF, DC->window_width/2 - koGIF->width/2, 200, 0);
+			if (player1_win) {
+				if (player2_character.number == 1) {
+					
+					algif_draw_gif(ch1DEAD_GIF, DC->window_width/2 - ch1DEAD_GIF->width/2, 400, 0);
+				} else if (player2_character.number == 2) {
+					
+					algif_draw_gif(ch2DEAD_GIF, DC->window_width/2 - ch2DEAD_GIF->width/2, 400, 0);
+				} else if (player2_character.number == 3) {
+					
+					algif_draw_gif(ch3DEAD_GIF, DC->window_width/2 - ch3DEAD_GIF->width/2, 400, 0);
+				}
+			} else {
+				if (player1_character.number == 1) {
+					
+					algif_draw_gif(ch1DEAD_GIF, DC->window_width/2 - ch1DEAD_GIF->width/2, 400, 0);
+				} else if (player1_character.number == 2) {
+					
+					algif_draw_gif(ch2DEAD_GIF, DC->window_width/2 - ch2DEAD_GIF->width/2, 400, 0);
+				} else if (player1_character.number == 3) {
+					
+					algif_draw_gif(ch3DEAD_GIF, DC->window_width/2 - ch3DEAD_GIF->width/2, 400, 0);
+				}
+			}
+			break;
+		}
 		case STATE::Fight_FINISH:{
 			char txt[10000];
 			if (no_winner){
@@ -693,8 +784,9 @@ void Game::game_draw() {
 				std::strcpy(txt,ss.c_str());
 			}
 			
-			
-			if ((player1_win && player1_character.number == 1) 
+			if (no_winner) {
+				al_draw_bitmap(win_map5, 0, 0, 0);
+			}else if ((player1_win && player1_character.number == 1) 
 			       || (!player1_win && player2_character.number == 1)){
 				al_draw_bitmap(win_map1, 0, 0, 0);
 			}else if ((player1_win && player1_character.number == 2) 
