@@ -65,8 +65,6 @@ void CharacterBase::set_state(CharacterState new_state) {
         //slide用hurt gif
         if (state == CharacterState::SLIDE) {
             current_animation = GIFC->get(gifPath[CharacterState::HURT]);
-        } else if (state == CharacterState::WALK) {
-            current_animation = GIFC->get(gifPath[CharacterState::RUN]);
         } else current_animation = GIFC->get(gifPath[state]);
         // for debug
         std::string s;
