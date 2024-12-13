@@ -133,7 +133,8 @@ void CharacterBase::update() {
             if (!is_attacking && !is_jumping) {
                 set_state(CharacterState::WALK);
             }
-        } else if (!is_attacking && !is_jumping && !is_hurting) {
+        } else if (!is_attacking && !is_jumping && !is_hurting && !is_sprint) {
+            //std::cout << "STOP1\n";
             set_state(CharacterState::STOP); // 停止狀態
         }
     }
@@ -143,6 +144,7 @@ void CharacterBase::update() {
         attack_timer -= 1.0 / 60.0;
         if (attack_timer <= 0) {
             is_attacking = false;
+            std::cout << "STOP2\n";
             set_state(CharacterState::STOP); // 返回停止狀態
         }
     } else {
@@ -163,7 +165,26 @@ void CharacterBase::update() {
         slide_timer -= 1.0 / 60.0;
         if (slide_timer <= 0) {
             sliding = false;
+            std::cout << "STOP3\n";
             set_state(CharacterState::STOP);
+        }
+    }
+    if (is_sprint){
+        update_sprint();
+        sprint_timer -= 1.0 / 60.0;
+        if (sprint_timer <= 0){
+            is_sprint = false;
+            std::cout << "cancel sprint\n";
+            if (atk_flag){
+                atk_flag = false;
+                is_attacking = true;
+                attack_timer = attack_duration;
+                set_state(atk_flag_state);
+            }else{
+                std::cout << "STOP4\n";
+                set_state(CharacterState::STOP);
+            }
+            
         }
     }
 
@@ -402,6 +423,18 @@ void CharacterBase::start_knockback(double distance, double direction) {
     this->slide_speed = distance / 60.0; // 假設滑行持續 1 秒，每幀移動距離
 }
 
+void CharacterBase::start_sprint(double distance, double direction, CharacterState nxt_state){
+    //sprint_flag = 1;
+    is_sprint = true;
+    sprint_distancde = distance;
+    sprint_direction = direction;
+    sprint_speed = sprint_distancde / 60.0;
+    sprint_timer = 1.0;
+    set_state(CharacterState::RUN);
+    atk_flag_state = nxt_state;
+    atk_flag = true;
+}
+
 void CharacterBase::update_knockback() {
     if (!sliding) return; // 如果不在滑行狀態則直接返回
 
@@ -412,6 +445,29 @@ void CharacterBase::update_knockback() {
     if (slide_distance <= 0) {
         sliding = false; // 滑行結束
         std::cout << "Knockback completed! Final position: " << shape->center_x() << std::endl;
+    }
+}
+
+void CharacterBase::update_sprint(){
+    if (!is_sprint)return;
+
+    double sprint_step = std::min(sprint_speed, sprint_distancde);
+    shape->update_center_x(shape->center_x() + sprint_step * sprint_direction);
+
+    sprint_distancde -= sprint_step;
+    if (sprint_distancde <= 0){
+        sprint_timer = 0;
+        is_sprint = false;
+        std::cout << "cancel sprint2\n";
+        if (atk_flag){
+            atk_flag = false;
+            is_attacking = true;
+            attack_timer = attack_duration;
+            set_state(atk_flag_state);
+            
+        }      
+        
+
     }
 }
 
@@ -447,6 +503,7 @@ void CharacterBase::update_freeze() {
         if (freeze_timer <= 0) {
             is_frozen = false; // 凍住結束
             std::cout << "Freeze effect ended. Target is now free to move.\n";
+            std::cout << "STOP5\n";
             set_state(CharacterState::STOP);
         } else {
             // 確保狀態保持在 FREEZE

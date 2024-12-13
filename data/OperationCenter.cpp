@@ -200,6 +200,12 @@ void OperationCenter::skill_knockback(CharacterBase& caster, CharacterBase& targ
     std::cout << "Knockback started! Distance: " << distance << ", Direction: " << direction << std::endl;
 }
 
+void OperationCenter::skill_sprint(CharacterBase& caster, CharacterBase& target, double distance, int atk_type){
+	double dir = (caster._get_dir())? -1:1;
+	if (atk_type == 1)
+		caster.start_sprint(distance, dir, CharacterState::ATTACK1);
+}	
+
 void OperationCenter::skill_poison(CharacterBase& caster, CharacterBase& target, double time){
 	target._set_poisonTimer(time);
 }
@@ -210,8 +216,9 @@ void OperationCenter::skill_SlowDown(CharacterBase& caster, CharacterBase& targe
 
 void OperationCenter::skill1(CharacterBase& caster, CharacterBase& target, int role_number){
 	if (role_number == 1) {
-		skill_freeze(caster, target, 2.0); // 凍住 2 秒
-		skill_damage(caster, target, 40);
+		skill_sprint(caster, target, 500.0, 1);
+		//skill_freeze(caster, target, 2.0); // 凍住 2 秒
+		//skill_damage(caster, target, 40);
 	} else if (role_number == 2) {
 		skill_freeze(caster, target, 2.0); // 凍住 2 秒
 		skill_damage(caster, target, 40); // 玩家2攻擊玩家1，扣40血

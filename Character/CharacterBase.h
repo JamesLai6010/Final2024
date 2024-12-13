@@ -60,6 +60,10 @@ public:
     void start_knockback(double distance, double direction);
     void update_knockback();
     void set_slide_timer(double t);
+
+    void start_sprint(double distance, double direction, CharacterState nxt_state);
+    void update_sprint();
+
     void _set_poisonTimer(double t);
     double _get_ATKbias();
     void _set_Rage_status(bool );
@@ -86,7 +90,6 @@ public:
 
 
 protected:  
-
 
     // 狀態與動畫
     CharacterState state = CharacterState::NONE;
@@ -115,6 +118,10 @@ protected:
     bool is_Rage_status = false;
     bool is_slow_down = false;
     bool tp_gif = false;
+    bool sprint_flag = false;
+    bool atk_flag = false;
+    CharacterState atk_flag_state = CharacterState::NONE;
+    bool is_sprint = false;
 
     bool is_frozen = false;        // 是否凍住
     double freeze_timer = 0.0;     // 凍住持續時間
@@ -128,6 +135,11 @@ protected:
     double slide_distance;
     double slide_direction;
     double slide_speed;
+
+    double sprint_distancde;
+    double sprint_direction;
+    double sprint_speed;
+
     double poison_timer;
 
     // 搭載的符文參數
@@ -147,6 +159,7 @@ protected:
     double shield_duration = 0.7;
     double hurt_timer = 0.0;
     double slide_timer = 0.0;
+    double sprint_timer = 0.0;
     double hurt_duration = 0.4;
 
     // 效果計時器
@@ -167,7 +180,7 @@ protected:
     // 碰撞箱
     void update_bounding_box();
 
-    
+
 
 };
 

@@ -34,7 +34,7 @@ public:
 	void skill_teleport_behind(CharacterBase& caster, CharacterBase& target, double distance);
 	//大招護盾
 	void skill_shield(CharacterBase& caster, double shield_value, double duration);
-	
+	void skill_sprint(CharacterBase& caster, CharacterBase& target, double distance, int attack);
 	void skill1(CharacterBase& caster, CharacterBase& target, int role_number);
 	void skill2(CharacterBase& caster, CharacterBase& target, int role_number);
 	void skill3(CharacterBase& caster, CharacterBase& target, int role_number);
