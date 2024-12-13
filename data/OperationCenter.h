@@ -32,14 +32,18 @@ public:
 	void skill_SlowDown(CharacterBase& caster, CharacterBase& target, double time);
 	void skill_freeze(CharacterBase& caster, CharacterBase& target, double duration);
 	void skill_teleport_behind(CharacterBase& caster, CharacterBase& target, double distance);
+	void skill_shoot(CharacterBase& caster, double time);
 	//大招護盾
 	void skill_shield(CharacterBase& caster, double shield_value, double duration);
 	
 	void skill1(CharacterBase& caster, CharacterBase& target, int role_number);
 	void skill2(CharacterBase& caster, CharacterBase& target, int role_number);
 	void skill3(CharacterBase& caster, CharacterBase& target, int role_number);
-
+	
 	void set_player_roles(int player1_role, int player2_role);
+
+	void _update_projectiles();
+	void _detect_far_attack();
 
 private:
 	OperationCenter() {}

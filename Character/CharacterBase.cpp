@@ -44,7 +44,8 @@ void CharacterBase::init() {
     shield_animation = GIFC->get("./assets/gif/Shield.gif");
     poison_animation = GIFC->get("./assets/gif/Poison.gif");
     teleport_animation = GIFC->get("./assets/gif/tp.gif");
-
+    bulletLEFT_animation = GIFC->get("./assets/gif/shootLEFT.gif");
+    //bulletRIGHT_animation = GIFC->get("./assets/gif/shootRIGHT.gif");
 
     // 加載初始動畫 (靜止)
     current_animation = GIFC->get(gifPath[CharacterState::STOP]);
@@ -109,6 +110,7 @@ void CharacterBase::update() {
     update_freeze();
     update_shield();
     update_effects();
+    update_projectiles();
     // 如果角色被凍住，僅阻止行為更新，但允許效果計時器繼續更新
     if (is_frozen) {
          // 更新狀態效果計時器
@@ -341,6 +343,11 @@ void CharacterBase::draw() {
         float effect_y = shape->center_y() - (teleport_animation->height * scale_y) / 2;
         algif_draw_gif(teleport_animation, effect_x, effect_y, 0);
     }
+
+    for (const auto& proj : projectiles) {
+        bool facing_left = proj.velocity_x < 0; // 判斷子彈方向
+        algif_draw_gif(bulletLEFT_animation, proj.x, proj.y, facing_left ? 0 : ALLEGRO_FLIP_HORIZONTAL);
+    }
 }
 // 設定藥水效果
 void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b){
@@ -512,3 +519,49 @@ void CharacterBase::_set_tp_timer(double t) {
     tp_gif = true;
     tp_gif_timer = t;
 }
+
+void CharacterBase::shoot(double time) {
+    double start_x = shape->center_x();
+    double start_y = shape->center_y() - 50; // 子彈略高於角色中心
+    double direction = _get_dir() ? -1.0 : 1.0;
+
+    double velocity_x = 200.0 * direction;
+
+    projectiles.push_back({
+        start_x,
+        start_y,
+        velocity_x,
+        0.0,
+        time,
+        std::make_unique<Rectangle>(
+            start_x,
+            start_y,
+            start_x+bulletLEFT_animation->width,
+            start_y+bulletLEFT_animation->height // 子彈大小為 20x20
+        )
+    });
+
+    std::cout << "Projectile fired at (" << start_x << ", " << start_y 
+              << ") with velocity (" << velocity_x << ", 0.0)\n";
+}
+
+void CharacterBase::update_projectiles() {
+    std::vector<Projectile> active_projectiles;
+
+    for (auto& proj : projectiles) {
+        proj.x += proj.velocity_x * (1.0 / 60.0);
+        proj.y += proj.velocity_y * (1.0 / 60.0);
+        proj.lifetime -= 1.0 / 60.0;
+
+        // 更新碰撞箱的位置
+        proj.shape->update_center_x(proj.x);
+        proj.shape->update_center_y(proj.y);
+
+        if (proj.lifetime > 0) {
+            active_projectiles.push_back(std::move(proj));
+        }
+    }
+
+    projectiles = std::move(active_projectiles);
+}
+

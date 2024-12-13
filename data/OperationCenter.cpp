@@ -90,6 +90,9 @@ void OperationCenter::_update_character12() {
 	DataCenter *DC = DataCenter::get_instance();
 	CharacterBase &CH1 = *(DC->character1);
 	CharacterBase &CH2 = *(DC->character2);
+	//子彈
+	_detect_far_attack();
+	_update_projectiles();
 
 	// first check touch
 	if (!(CH1.shape->overlap(*(DC->character2->shape)))){
@@ -304,6 +307,49 @@ void OperationCenter::skill_teleport_behind(CharacterBase& caster, CharacterBase
     std::cout << "Teleport behind activated! New Position: (" 
               << new_x << ", " << new_y << ")" << std::endl;
 }
+
+void OperationCenter::skill_shoot(CharacterBase& caster, double time) {
+    caster.shoot(time); // 呼叫角色內的射擊邏輯
+}
+
+void OperationCenter::_update_projectiles() {
+    DataCenter* DC = DataCenter::get_instance();
+    CharacterBase& CH1 = *(DC->character1);
+    CharacterBase& CH2 = *(DC->character2);
+
+    // 檢查角色1的子彈是否擊中角色2
+    for (auto& proj : CH1.projectiles) {
+        if (proj.shape->overlap(*CH2.shape)) {
+            CH2._set_HP(-20); // 假設子彈造成20點傷害
+            std::cout << "Projectile from CH1 hit CH2! CH2 HP: " << CH2._get_HP() << std::endl;
+            proj.lifetime = 0; // 讓子彈失效
+        }
+    }
+
+    // 檢查角色2的子彈是否擊中角色1
+    for (auto& proj : CH2.projectiles) {
+        if (proj.shape->overlap(*CH1.shape)) {
+            CH1._set_HP(-20); // 假設子彈造成20點傷害
+            std::cout << "Projectile from CH2 hit CH1! CH1 HP: " << CH1._get_HP() << std::endl;
+            proj.lifetime = 0; // 讓子彈失效
+        }
+    }
+}
+
+void OperationCenter::_detect_far_attack() {
+	DataCenter* DC = DataCenter::get_instance();
+	CharacterBase& CH1 = *(DC->character1);
+    CharacterBase& CH2 = *(DC->character2);
+	if (DC->character1->_get_state() == CharacterState::ATTACK2) {
+		if (CH1._get_ATKtimer() - 0.5 != 0)return;
+		if (player1_role == 1) skill_shoot(CH1, 4.0);
+	}
+	if (DC->character1->_get_state() == CharacterState::ATTACK2) {
+		if (CH2._get_ATKtimer() - 0.5 != 0)return;
+		if (player2_role == 1) skill_shoot(CH2, 4.0);
+	}
+}
+
 
 
 

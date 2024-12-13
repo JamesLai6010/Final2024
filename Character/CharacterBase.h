@@ -81,8 +81,22 @@ public:
     void handle_attack_input(DataCenter* DC);  //attack
     void update_effects();   //效果
 
+    void shoot(double time);                  // 發射射出物
+    void update_projectiles();     // 更新射出物位置
+    void draw_projectiles();       // 繪製射出物
+
     //重新玩
     void reset();
+
+    struct Projectile {
+        double x;          // 當前的 x 座標
+        double y;          // 當前的 y 座標
+        double velocity_x; // 水平速度
+        double velocity_y; // 垂直速度（若不需要垂直移動，可設為0）
+        double lifetime;   // 存活時間
+        std::unique_ptr<Shape> shape; // 碰撞箱
+    };
+    std::vector<Projectile> projectiles; // 儲存射出物的容器
 
 
 protected:  
@@ -100,7 +114,8 @@ protected:
     ALGIF_ANIMATION* shield_animation = nullptr;
     ALGIF_ANIMATION* poison_animation = nullptr;
     ALGIF_ANIMATION* teleport_animation = nullptr;
-
+    ALGIF_ANIMATION* bulletLEFT_animation = nullptr;
+    ALGIF_ANIMATION* bulletRIGHT_animation = nullptr;
     // 角色參數
     double HP = 1000;
     double Rage = 0; // 怒氣值，觸發大招
@@ -166,6 +181,8 @@ protected:
 
     // 碰撞箱
     void update_bounding_box();
+
+    
 
     
 
