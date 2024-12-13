@@ -39,6 +39,8 @@ void CharacterBase::init() {
     atk_effect_animation = GIFC->get("./assets/gif/minecraft_effect2.gif");
     hit_animation = GIFC->get("./assets/gif/Hit.gif");
     shield_animation = GIFC->get("./assets/gif/Shield.gif");
+    poison_animation = GIFC->get("./assets/gif/Poison.gif");
+    teleport_animation = GIFC->get("./assets/gif/tp.gif");
 
 
     // 加載初始動畫 (靜止)
@@ -166,33 +168,33 @@ void CharacterBase::update() {
     enforce_boundaries();
 }
 
-//各項效果
+//各項效果，輸入統整為秒
 void CharacterBase::update_effects() {
     // 更新速度加成效果
-    if (Speed_timer > 0) {
-        Speed_timer -= 1;
+    if (Speed_timer > 0) { 
+        Speed_timer -= 1.0 / 60.0;
     } else {
         Speed_timer = 0;
         speed_bias = 0;
     }
 
     // 更新攻擊加成效果
-    if (Atk_timer > 0) {
-        Atk_timer -= 1 / 60;
+    if (Atk_timer > 0) {   //輸入是秒
+        Atk_timer -= 1.0 / 60.0;
     } else {
         Atk_timer = 0;
         Atk_bias = 0;
     }
 
     // 更新生命回復效果
-    if (Hp_timer > 0) {
-        Hp_timer -= 1 / 60.0;
+    if (Hp_timer > 0) {   //輸入是秒
+        Hp_timer -= 1.0 / 60.0;
     } else {
         Hp_timer = 0;
     }
 
     // 更新緩速效果
-    if (is_slow_down) {
+    if (is_slow_down) {   //輸入是秒
         slow_down_timer -= 1.0 / 60.0;
         if (slow_down_timer <= 0) {
             is_slow_down = false;
@@ -200,8 +202,8 @@ void CharacterBase::update_effects() {
     }
 
     // 更新中毒效果
-    if (is_poisoned) {
-        poison_timer -= 1;
+    if (is_poisoned) {   
+        poison_timer -= 1.0 / 60.0;
         if (poison_timer <= 0) {
             is_poisoned = false;
         }
@@ -211,11 +213,18 @@ void CharacterBase::update_effects() {
     }
 
     // 更新受傷效果
-    if (is_hurting) {
+    if (is_hurting) {     //輸入是秒
         hurt_timer -= 1.0 / 60.0;
         if (hurt_timer <= 0) {
             is_hurting = false; // 受傷狀態結束
             //set_state(CharacterState::STOP); // 回到停止狀態
+        }
+    }
+
+    if (tp_gif) {      //輸入是秒
+        tp_gif_timer -= 1.0 / 60.0;
+        if (tp_gif_timer <= 0) {
+            tp_gif = false;
         }
     }
 }
@@ -297,6 +306,7 @@ void CharacterBase::draw() {
     if (Atk_timer > 0 && atk_effect_animation) {
         float effect_x = shape->center_x() - (atk_effect_animation->width * scale_x) / 2;
         float effect_y = shape->center_y() - (atk_effect_animation->height * scale_y) / 2;
+        //printf("Atk_timer: %lf", Atk_timer);
         algif_draw_gif(atk_effect_animation, effect_x, effect_y, 0);
     }
 
@@ -306,16 +316,27 @@ void CharacterBase::draw() {
         algif_draw_gif(hp_effect_animation, effect_x, effect_y, 0);
     }
 
-    if (is_hurting || is_poisoned) {
+    if (is_hurting) {
         float effect_x = shape->center_x() - (hit_animation->width * scale_x) / 2;
         float effect_y = shape->center_y() - (hit_animation->height * scale_y) / 2 + 30;
         algif_draw_gif(hit_animation, effect_x, effect_y, 0);
+    }
+    if (is_poisoned) {
+        float effect_x = shape->center_x() - (poison_animation->width * scale_x) / 2;
+        float effect_y = shape->center_y() + (current_animation->height * scale_x) / 2 - (poison_animation->height * scale_x);
+        algif_draw_gif(poison_animation, effect_x, effect_y, 0);
     }
 
     if (shield_value > 0) {
         float effect_x = shape->center_x() - (shield_animation->width * scale_x) / 2;
         float effect_y = shape->center_y() - (shield_animation->height * scale_y) / 2;
         algif_draw_gif(shield_animation, effect_x, effect_y, 0);
+    }
+
+    if (tp_gif) {
+        float effect_x = shape->center_x() - (teleport_animation->width * scale_x) / 2;
+        float effect_y = shape->center_y() - (teleport_animation->height * scale_y) / 2;
+        algif_draw_gif(teleport_animation, effect_x, effect_y, 0);
     }
 }
 // 設定藥水效果
@@ -325,8 +346,7 @@ void CharacterBase::set_effect_val(double hp, double sp_t, double sp_b, double a
     Speed_timer += sp_t;
     Atk_bias = std::max(Atk_bias, atk_b);
     Atk_timer += atk_t;
-    if (hp > 0)
-    Hp_timer += 0.3;
+    if (hp > 0) {Hp_timer += 0.3;}
 }
 // 選角後的更新路徑
 void CharacterBase::reset_gif_paths(const std::map<CharacterState, std::string>& new_gif_paths) {
@@ -474,6 +494,7 @@ void CharacterBase::reset() {
     attack_timer = 0.0;
     shield_timer = 0.0;
     hurt_timer = 0.0;
+    tp_gif_timer = 0.0;
 
     // 重置位置
     shape->update_center_x(initial_x);
@@ -482,4 +503,9 @@ void CharacterBase::reset() {
     // 重新加載動畫
     GIFCenter* GIFC = GIFCenter::get_instance();
     current_animation = GIFC->get(gifPath[CharacterState::STOP]);
+}
+
+void CharacterBase::_set_tp_timer(double t) {
+    tp_gif = true;
+    tp_gif_timer = t;
 }

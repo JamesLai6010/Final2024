@@ -31,6 +31,7 @@ public:
 	void skill_poison(CharacterBase& caster, CharacterBase& target, double time);
 	void skill_SlowDown(CharacterBase& caster, CharacterBase& target, double time);
 	void skill_freeze(CharacterBase& caster, CharacterBase& target, double duration);
+	void skill_teleport_behind(CharacterBase& caster, CharacterBase& target, double distance);
 	//大招護盾
 	void skill_shield(CharacterBase& caster, double shield_value, double duration);
 	

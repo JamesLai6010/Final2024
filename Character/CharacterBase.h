@@ -73,7 +73,8 @@ public:
     void update_shield();
     bool _is_shielded() const { return is_shielded; }
     double _get_shield_value() const { return shield_value; }
-
+    //tp gif
+    void _set_tp_timer(double t);
     //角色移動相關
     void enforce_boundaries();   //邊界
     void handle_jump_logic(DataCenter* DC);  //jump
@@ -97,6 +98,8 @@ protected:
     ALGIF_ANIMATION* atk_effect_animation = nullptr;   // 攻擊效果動畫
     ALGIF_ANIMATION* hit_animation = nullptr;
     ALGIF_ANIMATION* shield_animation = nullptr;
+    ALGIF_ANIMATION* poison_animation = nullptr;
+    ALGIF_ANIMATION* teleport_animation = nullptr;
 
     // 角色參數
     double HP = 1000;
@@ -111,6 +114,7 @@ protected:
     bool sliding = false;
     bool is_Rage_status = false;
     bool is_slow_down = false;
+    bool tp_gif = false;
 
     bool is_frozen = false;        // 是否凍住
     double freeze_timer = 0.0;     // 凍住持續時間
@@ -151,6 +155,7 @@ protected:
     double speed_bias = 0; // 速度偏移值
     double Atk_timer = 0; 
     double Atk_bias = 0;
+    double tp_gif_timer = 0.0;
 
     // 初始位置
     double initial_x = 300;

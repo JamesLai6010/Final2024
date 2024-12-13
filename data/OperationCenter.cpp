@@ -114,8 +114,8 @@ void OperationCenter::_update_character12() {
 		((CH2._get_dir() && CH2.shape->center_x() >= CH1.shape->center_x()) || // CH2 面向左，且 CH1 在左
         (!CH2._get_dir() && CH2.shape->center_x() < CH1.shape->center_x()));  // CH2 面向右，且 CH1 在右邊
 
-	if (ch1_valid) std::cout << "CH1 attack CH2!" << std::endl;
-	if (ch2_valid) std::cout << "CH2 attack CH1!" << std::endl;
+	//if (ch1_valid) std::cout << "CH1 attack CH2!" << std::endl;
+	//if (ch2_valid) std::cout << "CH2 attack CH1!" << std::endl;
     
 	// 處理同時攻擊的狀況
 	if (ch2_valid && ch1_valid){
@@ -156,7 +156,7 @@ void OperationCenter::_update_character12() {
 		}
 	}
 	if (ch1_valid) {
-		std::cout << "Player 1 is attacking!" << std::endl;
+		//std::cout << "Player 1 is attacking!" << std::endl;
 		CharacterState current_state = CH1._get_state();
         if (current_state == CharacterState::ATTACK1) {
 			skill1(CH1, CH2, player1_role);
@@ -168,7 +168,7 @@ void OperationCenter::_update_character12() {
     }
 
     if (ch2_valid) {
-		std::cout << "Player 2 is attacking!" << std::endl;
+		//std::cout << "Player 2 is attacking!" << std::endl;
     	CharacterState current_state = CH2._get_state();
 		if (current_state == CharacterState::ATTACK1) {
 			skill1(CH2, CH1, player2_role);
@@ -227,11 +227,12 @@ void OperationCenter::skill1(CharacterBase& caster, CharacterBase& target, int r
 
 void OperationCenter::skill2(CharacterBase& caster, CharacterBase& target, int role_number){
 	if (role_number == 1) {
-		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+		skill_teleport_behind(caster, target, 200.0); // 傳送距離設為 50 像素
+		//skill_knockback(caster, target, 200.0); // 距離 100，速度 10
 	} else if (role_number == 2) {
 		//skill_damage(caster, target, 35);
 		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
-		skill_poison(caster, target, 1000);
+		skill_poison(caster, target, 10);
 	} else if (role_number == 3) {
 		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
 	} else if (role_number == 4) {
@@ -281,5 +282,28 @@ void OperationCenter::skill_shield(CharacterBase& caster, double shield_value, d
     caster._set_shield(shield_value, duration); // 為角色設置護盾值與持續時間
     std::cout << "Shield skill activated! Value: " << shield_value << ", Duration: " << duration << " seconds.\n";
 }
+
+void OperationCenter::skill_teleport_behind(CharacterBase& caster, CharacterBase& target, double distance) {
+    // 獲取敵人當前位置和面向方向
+    double target_x = target.shape->center_x();
+    double target_y = target.shape->center_y();
+    bool target_facing_left = target._get_dir(); // true: 面向左, false: 面向右
+
+    // 計算背後的位置
+    double new_x = target_x + (target_facing_left ? distance : -distance);
+    double new_y = target_y; // 假設同一高度
+	caster._set_tp_timer(0.5);
+    // 更新角色位置
+    caster.shape->update_center_x(new_x);
+    caster.shape->update_center_y(new_y);
+
+    // 確保不超出邊界 (可選)
+    caster.enforce_boundaries();
+
+    // 輸出調試信息
+    std::cout << "Teleport behind activated! New Position: (" 
+              << new_x << ", " << new_y << ")" << std::endl;
+}
+
 
 

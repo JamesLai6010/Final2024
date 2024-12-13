@@ -116,10 +116,11 @@ void Prop::Prop_effect(CharacterBase &CH){
 		CH.set_effect_val(100, 0, 0, 0, 0);
 		break;
 	case PropsType::Haste:
-		CH.set_effect_val(0, 100, val, 0, 0);
+		CH.set_effect_val(0, 1.5, val, 0, 0);
 		break;
 	case PropsType::Crit:
-		CH.set_effect_val(0, 0, 0, 0.5, val);
+		CH.set_effect_val(0, 0, 0, 1.0, val);
+		printf("1");
 	default:
 		break;
 	}

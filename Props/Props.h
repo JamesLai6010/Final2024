@@ -22,7 +22,7 @@ public:
 	void draw();
 	double get_fly_dict();
 private:
-	double const ground_base = 1300;
+	double const ground_base = 1500;
 	double vx; // Velocity in x direction.
 	double vy; // Velocity in y direction.
 	double fly_dist;
