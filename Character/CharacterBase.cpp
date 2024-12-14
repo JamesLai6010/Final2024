@@ -574,6 +574,7 @@ void CharacterBase::update_shield() {
 //重製所有參數
 void CharacterBase::reset() {
     HP = 1000;
+    max_HP = 1000;
     Rage = 0;
     state = CharacterState::STOP;
     is_facing_left = false;
@@ -593,6 +594,17 @@ void CharacterBase::reset() {
     life_steal_timer = 0.0;
     is_invincible = false;
     invincible_time = 0.0;
+    vertical_velocity = 0.0;
+    slide_direction = 0.0;
+    speed_bias = 0.0;
+    ATK_flag = false;
+    atk_flag_state = CharacterState::NONE;
+    shield_value = 0.0;
+    Rage_bias = 0.0;
+    freeze_timer = 0.0;
+    poison_timer = 0.0;
+    slow_down_timer = 0.0;
+
     projectiles.clear();  //清空子彈
 
     // 重置位置
