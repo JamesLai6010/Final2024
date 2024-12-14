@@ -100,6 +100,8 @@ public:
     //重新玩
     void reset();
 
+    void start_invincible(double t);
+    void invincible_update();
     
 
     struct Projectile {
@@ -114,6 +116,12 @@ public:
 
 
 protected:  
+
+
+    bool is_invincible = false;
+    double invincible_time = 0;
+    double invincible_cd = 0;
+
     bool ATK_flag = false;
     CharacterState atk_flag_state = CharacterState::NONE;
     bool is_sprint = false;
@@ -128,7 +136,7 @@ protected:
     CharacterState state = CharacterState::NONE;
     ALGIF_ANIMATION* current_animation = nullptr;
     std::map<CharacterState, std::string> gifPath;
-
+    ALGIF_ANIMATION* invincible_animation = nullptr;
     ALGIF_ANIMATION* hp_effect_animation = nullptr;    // 血量效果動畫
     ALGIF_ANIMATION* speed_effect_animation = nullptr; // 速度效果動畫
     ALGIF_ANIMATION* atk_effect_animation = nullptr;   // 攻擊效果動畫

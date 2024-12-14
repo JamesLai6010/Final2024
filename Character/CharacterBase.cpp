@@ -45,6 +45,7 @@ void CharacterBase::init() {
     poison_animation = GIFC->get("./assets/gif/Poison.gif");
     teleport_animation = GIFC->get("./assets/gif/tp.gif");
     bulletLEFT_animation = GIFC->get("./assets/gif/shootLEFT.gif");
+    invincible_animation = GIFC->get("./assets/gif/Effect_Impact_1.gif");
     //bulletRIGHT_animation = GIFC->get("./assets/gif/shootRIGHT.gif");
 
     // 加載初始動畫 (靜止)
@@ -173,9 +174,30 @@ void CharacterBase::update() {
         sprint_update();
         sprint_timer -= 1.0 / 60.0;
     }
-
+    invincible_update();
     // 邊界檢查
     enforce_boundaries();
+}
+
+void CharacterBase::start_invincible(double t){
+    if (invincible_cd > 0 || is_invincible)return;
+    is_invincible = true;
+    invincible_cd = 0;
+    invincible_time = t;
+}
+void CharacterBase::invincible_update(){
+    if (is_invincible){
+        invincible_time -= 1.0 / 60.0;
+        if (invincible_time <= 0){
+            is_invincible = false;
+            invincible_cd = 5;
+        }
+        return;
+    }else{
+        if (invincible_cd <= 0)return;
+        invincible_cd -= 1.0 / 60.0;
+    }
+    return;
 }
 
 //各項效果，輸入統整為秒
@@ -218,7 +240,8 @@ void CharacterBase::update_effects() {
             is_poisoned = false;
         }
         if ((int)poison_timer % 2) {
-            HP -= 0.1; // 每秒扣血
+            if (!is_invincible)
+                HP -= 0.1; // 每秒扣血
         }
     }
 
@@ -263,6 +286,9 @@ void CharacterBase::handle_attack_input(DataCenter* DC) {
         }
         Rage += 5;
     } else if (DC->key_state[key_attack3]) {
+        if (role == 1){
+            start_invincible(1);
+        }
         set_state(CharacterState::ATTACK3);
         is_attacking = true;
         attack_timer = attack_duration;
@@ -321,6 +347,11 @@ void CharacterBase::draw() {
         float effect_x = shape->center_x() - (speed_effect_animation->width * scale_x) / 2;
         float effect_y = shape->center_y() + (current_animation->height * scale_y) / 2 -(speed_effect_animation->height * scale_y);
         algif_draw_gif(speed_effect_animation, effect_x, effect_y, 0);
+    }
+    if (is_invincible){
+        float effect_x = shape->center_x() - (poison_animation->width * scale_x) / 2;
+        float effect_y = shape->center_y() + (current_animation->height * scale_x) / 2 - (invincible_animation->height * scale_x);
+        algif_draw_gif(invincible_animation, effect_x, effect_y, 0);
     }
 
     if (Atk_timer > 0 && atk_effect_animation) {
