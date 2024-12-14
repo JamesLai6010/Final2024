@@ -369,7 +369,7 @@ void CharacterBase::draw() {
     algif_draw_gif(current_animation, draw_x, draw_y, flags);
 
     //畫bound_box
-    al_draw_rectangle(draw_x, draw_y, draw_x+current_animation->width, draw_y+current_animation->height, al_map_rgb(255,255,255), 3);
+    // al_draw_rectangle(draw_x, draw_y, draw_x+current_animation->width, draw_y+current_animation->height, al_map_rgb(255,255,255), 3);
     // 藥水效果動畫
     if (Speed_timer > 0 && speed_effect_animation) {
         float effect_x = shape->center_x() - (speed_effect_animation->width * scale_x) / 2;
