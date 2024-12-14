@@ -11,7 +11,7 @@
 #include "../Character/Character2.h"
 #include "../Character/CharacterBase.h"
 #include <iostream>
-
+constexpr char bomb_sound_path[] = "./assets/sound/bomb.mp3";
 void OperationCenter::update() {
 	// Update monsters.
 	//_update_monster();
@@ -60,6 +60,9 @@ void OperationCenter::draw() {
 	//_draw_tower();
 	//_draw_towerBullet();
 	_draw_prop();
+	for (Meteor& meteor : meteors) {
+        meteor.draw();
+    }
 }
 
 void OperationCenter::_draw_prop(){
@@ -284,7 +287,7 @@ void OperationCenter::skill3(CharacterBase& caster, CharacterBase& target, int r
 	if (role_number == 1) {
 		skill_damage(caster, target, 50); // 距離 100，速度 10
 		return;
-	} else if (role_number == 3) {
+	} else if (role_number == 2) {
 		skill_damage(caster, target, 50);
 	}
 	
@@ -367,6 +370,73 @@ void OperationCenter::_update_projectiles() {
     }
 }
 
+
+void OperationCenter::spawn_meteor() {
+    // 初始化隨機種子（可移到主程序中避免多次初始化）
+    static bool seeded = false;
+    if (!seeded) {
+        std::srand(std::time(nullptr));
+        seeded = true;
+    }
+
+    Meteor newMeteor;
+    double randomX = std::rand() % 1600; // 隨機 X 座標 (0 ~ 1600)
+    double randomVelocityY = 200 + (std::rand() % 100); // 隨機垂直速度 (200 ~ 300)
+    double lifetime = 10.0; // 隕石存活時間
+
+    newMeteor.width = 70;  // 隕石寬度
+    newMeteor.height = 70; // 隕石高度
+    newMeteor.image1 = al_load_bitmap("assets/image/bomb.png"); // 圖片 1
+    newMeteor.image2 = al_load_bitmap("assets/image/bombFlash.png"); // 圖片 2
+
+    newMeteor.generate(randomX, -newMeteor.height, randomVelocityY, lifetime);
+
+    // 將隕石加入容器
+    meteors.push_back(std::move(newMeteor));
+}
+
+void OperationCenter::update_meteors() {
+    for (size_t i = 0; i < meteors.size(); i++) {
+        meteors[i].update();
+        if (meteors[i].toDelete) {
+            // 刪除過期的隕石
+            meteors.erase(meteors.begin() + i);
+            i--; // 更新索引
+        }
+    }
+
+	DataCenter* DC = DataCenter::get_instance();
+    CharacterBase& CH1 = *(DC->character1); // 角色 1
+    CharacterBase& CH2 = *(DC->character2); // 角色 2
+	SoundCenter* SC = SoundCenter::get_instance();
+
+    for (size_t i = 0; i < meteors.size(); i++) {
+        Meteor& meteor = meteors[i];
+
+        // 判斷是否撞到角色 1
+        if (meteor.shape->overlap(*(CH1.shape))) {
+            CH1._set_HP(-30); // 扣除角色 1 血量 (10 點)
+			CH1.set_state(CharacterState::HURT);
+			SC->play(bomb_sound_path, ALLEGRO_PLAYMODE_ONCE);
+            meteor.toDelete = true; // 隕石標記為刪除
+            std::cout << "Meteor hit Player 1! HP: " << CH1._get_HP() << "\n";
+        }
+
+        // 判斷是否撞到角色 2
+        else if (meteor.shape->overlap(*(CH2.shape))) {
+            CH2._set_HP(-30); // 扣除角色 2 血量 (10 點)
+			CH2.set_state(CharacterState::HURT);
+			SC->play(bomb_sound_path, ALLEGRO_PLAYMODE_ONCE);
+            meteor.toDelete = true; // 隕石標記為刪除
+            std::cout << "Meteor hit Player 2! HP: " << CH2._get_HP() << "\n";
+        }
+    }
+}
+
+void OperationCenter::reset_meteors() {
+    meteors.clear(); // 清空隕石列表
+    std::cout << "All meteors have been reset.\n";
+}
 
 
 

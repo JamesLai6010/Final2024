@@ -604,6 +604,7 @@ void CharacterBase::reset() {
     freeze_timer = 0.0;
     poison_timer = 0.0;
     slow_down_timer = 0.0;
+    Speed_timer = 0.0;
 
     projectiles.clear();  //清空子彈
 

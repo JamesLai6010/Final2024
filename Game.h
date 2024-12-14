@@ -113,6 +113,10 @@ private:
     double countdown_timer = 3;
     bool start_countdown = false;
     double ko_timer = 3;
+
+    // 定義狀態變數
+    int fastForwardState = 0;  // 0: 初始，1: 快轉到70秒，2: 快轉到10秒
+    int rewindState = 0;       // 0: 初始，1: 回退到180秒，2: 回退到70秒
 private:
     ALLEGRO_DISPLAY *display;
     ALLEGRO_TIMER *timer;

@@ -456,6 +456,9 @@ Game::game_update() {
 			debug_log("<COUNTDOWN_TIMER> %lf\n", countdown_timer);
     		if (countdown_timer <= -0.5) {
 				start_countdown = false;
+				// 定義狀態變數
+				fastForwardState = 0;  // 0: 初始，1: 快轉到70秒，2: 快轉到10秒
+				rewindState = 0;       // 0: 初始，1: 回退到180秒，2: 回退到70秒
         		state = STATE::LEVEL;               // 切換到 LEVEL 狀態
         		debug_log("<Game> state: change to LEVEL\n");
         		DC->background_inf->_set_time();    // 初始化時間
@@ -473,6 +476,34 @@ Game::game_update() {
 			if (!gameBGM) {
     			gamebackgroundBGM = SC->play(game_sound_path, ALLEGRO_PLAYMODE_LOOP);
     			gameBGM = true;
+			}
+			//快轉後退
+			if (DC->key_state[ALLEGRO_KEY_BACKSPACE] && !DC->prev_key_state[ALLEGRO_KEY_BACKSPACE]) {
+    			if (fastForwardState == 0) {
+        			DC->background_inf->set_time(70); // 快轉到70秒
+        			fastForwardState = 1;            // 切換到下一狀態
+    			} else if (fastForwardState == 1) {
+        			DC->background_inf->set_time(10); // 快轉到10秒
+        			fastForwardState = 2;             // 切換到下一狀態
+    			} else if (fastForwardState == 2) {
+        			DC->background_inf->set_time(180); // 回到70秒
+        			fastForwardState = 0;             // 重置到初始狀態
+    			}
+			}
+			if (DC->background_inf->get_Time() <= 60) {
+				static double meteorSpawnTimer = 0.0;
+            	meteorSpawnTimer += 1.0 / DC->FPS;
+
+            	// 每隔 2 秒生成一顆隕石
+            	if (meteorSpawnTimer >= 1.0) {
+                	OC->spawn_meteor();
+                	meteorSpawnTimer = 0.0;
+            	}
+
+            	// 更新隕石
+            	OC->update_meteors();
+			} else {
+				OC->reset_meteors(); // 清空隕石列表
 			}
 
 			// if(DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
@@ -938,6 +969,7 @@ void Game::reset_game() {
 	DC->character2->reset();
 	DC->background_inf->init();
 	DC->prop_god->reset();
+	OC->reset_meteors(); // 清空隕石列表
     // 重設遊戲狀態
     
 	player_turn = 1;

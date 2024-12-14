@@ -1,6 +1,9 @@
 #ifndef OPERATIONCENTER_H_INCLUDED
 #define OPERATIONCENTER_H_INCLUDED
-
+#include "../Props/Meteor.h"
+#include "SoundCenter.h"
+#include <cstdlib> // For rand()
+#include <ctime>   // For seeding rand()
 /**
  * @brief Class that defines functions for all object operations.
  * @details Object self-update, draw, and object-to-object interact functions are defined here.
@@ -43,6 +46,11 @@ public:
 	void set_player_roles(int player1_role, int player2_role);
 
 	void _update_projectiles();
+
+	void spawn_meteor();  // 隕石生成
+    void update_meteors(); // 更新隕石
+    void draw_meteors();   // 繪製隕石
+	void reset_meteors(); // 重置隕石
 	// void _detect_far_attack();
 
 	//void sprint_attack();
@@ -52,6 +60,9 @@ public:
 private:
 	OperationCenter() {}
 private:
+	std::vector<Meteor> meteors; // 儲存所有隕石
+    double meteorSpawnTimer = 0.0; // 用於計時生成隕石
+    double meteorSpawnInterval = 2.0; // 隕石生成間隔（例如，每 2 秒生成一顆）
 	/*
 	void _update_monster();
 	void _update_tower();

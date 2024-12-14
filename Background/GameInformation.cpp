@@ -66,6 +66,9 @@ bool BackgroundINF::_get_Time_flag(){
 int BackgroundINF::get_Time(){
     return Time;
 }
+void BackgroundINF::set_time(double t){
+    Time = t;
+}
 
 void BackgroundINF::update(){
     
@@ -84,7 +87,7 @@ void BackgroundINF::update(){
         //std::cout << "1 sec past\n";
     }
     Time = std::max(0, Time); // 最小為0
-
+    
     player1_Shield = CH1._get_shield_value(); // 獲取角色1的護盾值
     player2_Shield = CH2._get_shield_value(); // 獲取角色2的護盾值
 }

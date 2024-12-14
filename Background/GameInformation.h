@@ -20,6 +20,7 @@ class BackgroundINF: public Object{
     int get_Time();
     void _set_time();
     void _set_Time_flag(bool b);
+    void set_time(double t);
 
 
 
