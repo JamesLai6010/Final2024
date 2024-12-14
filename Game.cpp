@@ -509,6 +509,10 @@ Game::game_update() {
 				DC->character1->_set_HP(1000);
 				DC->character2->_set_HP(1000);
 			}
+			if (DC->key_state[ALLEGRO_KEY_F11]) {
+				DC->character1->_set_Rage(100);
+				DC->character2->_set_Rage(100);
+			}
 			//快轉後退
 			if (DC->key_state[ALLEGRO_KEY_BACKSPACE] && !DC->prev_key_state[ALLEGRO_KEY_BACKSPACE]) {
     			if (fastForwardState == 0) {
