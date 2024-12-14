@@ -91,7 +91,7 @@ void OperationCenter::_update_character12() {
 	CharacterBase &CH1 = *(DC->character1);
 	CharacterBase &CH2 = *(DC->character2);
 	//子彈
-	_detect_far_attack();
+	//_detect_far_attack();
 	_update_projectiles();
 
 
@@ -352,20 +352,6 @@ void OperationCenter::_update_projectiles() {
             proj.lifetime = 0; // 讓子彈失效
         }
     }
-}
-
-void OperationCenter::_detect_far_attack() {
-	DataCenter* DC = DataCenter::get_instance();
-	CharacterBase& CH1 = *(DC->character1);
-    CharacterBase& CH2 = *(DC->character2);
-	if (DC->character1->_get_state() == CharacterState::ATTACK2) {
-		if (CH1._get_ATKtimer() - 0.5 != 0)return;
-		if (player1_role == 1) skill_shoot(CH1, 4.0);
-	}
-	if (DC->character1->_get_state() == CharacterState::ATTACK2) {
-		if (CH2._get_ATKtimer() - 0.5 != 0)return;
-		if (player2_role == 1) skill_shoot(CH2, 4.0);
-	}
 }
 
 

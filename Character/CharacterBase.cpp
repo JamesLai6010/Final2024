@@ -257,6 +257,10 @@ void CharacterBase::handle_attack_input(DataCenter* DC) {
         set_state(CharacterState::ATTACK2);
         is_attacking = true;
         attack_timer = attack_duration;
+        if (role == 2) {
+            if (attack_timer - 0.5 != 0) return;
+            shoot(4.0);
+        }
         Rage += 5;
     } else if (DC->key_state[key_attack3]) {
         set_state(CharacterState::ATTACK3);
@@ -508,6 +512,7 @@ void CharacterBase::reset() {
     is_jumping = false;
     is_hurting = false;
     is_poisoned = false;
+    is_sprint = false;
     sliding = false;
     is_slow_down = false;
     is_shielded = false;
@@ -516,6 +521,7 @@ void CharacterBase::reset() {
     shield_timer = 0.0;
     hurt_timer = 0.0;
     tp_gif_timer = 0.0;
+    projectiles.clear();  //清空子彈
 
     // 重置位置
     shape->update_center_x(initial_x);
@@ -532,11 +538,13 @@ void CharacterBase::_set_tp_timer(double t) {
 }
 
 void CharacterBase::shoot(double time) {
+    
+    double direction = _get_dir() ? -1.0 : 1.0;
     double start_x = shape->center_x();
     double start_y = shape->center_y() - 50; // 子彈略高於角色中心
-    double direction = _get_dir() ? -1.0 : 1.0;
+    if (direction == -1.0) start_x -= 150;
 
-    double velocity_x = 200.0 * direction;
+    double velocity_x = 300.0 * direction;
 
     projectiles.push_back({
         start_x,

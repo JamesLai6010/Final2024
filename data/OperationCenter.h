@@ -43,7 +43,7 @@ public:
 	void set_player_roles(int player1_role, int player2_role);
 
 	void _update_projectiles();
-	void _detect_far_attack();
+	// void _detect_far_attack();
 
 	//void sprint_attack();
 	//void skill_sprintATK(CharacterBase& caster, double dis, int state);
