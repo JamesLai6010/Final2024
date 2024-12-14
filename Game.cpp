@@ -38,6 +38,7 @@ constexpr char background1_img_path[] = "./assets/image/background1.png";
 constexpr char background2_img_path[] = "./assets/image/background2.jpg";
 constexpr char background3_img_path[] = "./assets/image/background3.jpg";
 constexpr char countdown_img_path[] = "./assets/image/countdown.png";
+constexpr char about_img_path[] = "./assets/image/about.jpg";
 
 constexpr char character1_img_path[] = "./assets/image/character1.png";
 constexpr char character2_img_path[] = "./assets/image/character2.png";
@@ -230,6 +231,7 @@ Game::game_init() {
 	background2 = IC->get(background2_img_path);
 	background3 = IC->get(background3_img_path);
 	countdown = IC->get(countdown_img_path);
+	aboutscene = IC->get(about_img_path);
 	// 場景圖
 	character1 = IC->get(character1_img_path);
 	character2 = IC->get(character2_img_path);
@@ -291,6 +293,7 @@ Game::game_update() {
 	static ALLEGRO_SAMPLE_INSTANCE *victorySceneBGM = nullptr;
 	static ALLEGRO_SAMPLE_INSTANCE *countdownSound = nullptr;
 	static ALLEGRO_SAMPLE_INSTANCE *koSound = nullptr;
+	static ALLEGRO_SAMPLE_INSTANCE *aboutSound = nullptr;
 	switch(state) {
 		case STATE::MAIN_MENU: { // 主頁邏輯
 			sceneSelectionBGM = false;
@@ -315,6 +318,14 @@ Game::game_update() {
 						return false;
 						//state = STATE::END; // 切換狀態
 				}
+				if (DC->mouse.x >= 595 && DC->mouse.x <= 1021 &&
+                    DC->mouse.y >= 605 && DC->mouse.y <= 723) {
+						click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+                   		debug_log("<Game> state: change to ABOUT\n");
+						SC->toggle_playing(mainPage);   //把mainPage bgm暫停
+						aboutBGM = false;
+						state = STATE::ABOUT; // 切換狀態
+				}
             }
 
 			static bool BGM_played = false;
@@ -325,6 +336,23 @@ Game::game_update() {
 
             break;
         }
+		case STATE::ABOUT: {
+			if(!aboutBGM) {
+				aboutSound = SC->play(mainPage_sound_path, ALLEGRO_PLAYMODE_LOOP);
+				aboutBGM = true;
+			}
+			if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) { // 左鍵點擊
+                if (DC->mouse.x >= 25 && DC->mouse.x <= 225 &&
+                    DC->mouse.y >= 810 && DC->mouse.y <= 880) {
+					click = SC->play(click_sound_path, ALLEGRO_PLAYMODE_ONCE);
+                    debug_log("<Game> state: change to MAIN\n");
+					SC->toggle_playing(aboutSound);
+					SC->toggle_playing(mainPage);
+                    state = STATE::MAIN_MENU; // 切換狀態
+                }
+            }
+            break;
+		}
 		case STATE::SCENE_SELECTION: {
 			
             // 選擇場景
@@ -610,6 +638,15 @@ void Game::game_draw() {
         case STATE::MAIN_MENU: {
             // 繪製主頁背景
             al_draw_bitmap(main_page, 0, 0, 0);
+            break;
+        }
+		case STATE::ABOUT: {
+            // 繪製主頁背景
+            al_draw_bitmap(aboutscene, 0, 0, 0);
+			al_draw_text(
+        		FC->SuperMarioBros[FontSize::XL], al_map_rgb(255, 255, 255),
+        		30, DC->window_height - FontSize::XL - 10,
+        		ALLEGRO_ALIGN_LEFT, "BACK");
             break;
         }
 		case STATE::SCENE_SELECTION: {

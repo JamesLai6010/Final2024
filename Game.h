@@ -31,7 +31,8 @@ private:
         SCENE_SELECTION,  // 場景選擇
         Fight_FINISH,
         COUNTDOWN,
-        KO
+        KO,
+        ABOUT
     };
     STATE state;
 
@@ -48,6 +49,7 @@ private:
     ALLEGRO_BITMAP *character3;
     ALLEGRO_BITMAP *character4;
     ALLEGRO_BITMAP *countdown;
+    ALLEGRO_BITMAP *aboutscene;
     ALLEGRO_BITMAP *win_map1;
     ALLEGRO_BITMAP *win_map2;
     ALLEGRO_BITMAP *win_map3;
@@ -112,6 +114,7 @@ private:
     bool koBGM = false;
     double countdown_timer = 3;
     bool start_countdown = false;
+    bool aboutBGM = false;
     double ko_timer = 3;
 
     // 定義狀態變數
