@@ -435,7 +435,7 @@ void OperationCenter::update_meteors() {
 
 void OperationCenter::reset_meteors() {
     meteors.clear(); // 清空隕石列表
-    std::cout << "All meteors have been reset.\n";
+    //std::cout << "All meteors have been reset.\n";
 }
 
 

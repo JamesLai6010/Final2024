@@ -1,6 +1,7 @@
 #include "Props.h"
 #include "../data/DataCenter.h"
 #include "../data/ImageCenter.h"
+#include "../data/SoundCenter.h"
 #include "../data/GIFCenter.h"
 #include "../shapes/Circle.h"
 #include "../shapes/Point.h"
@@ -20,6 +21,8 @@ Prop::Prop(const Point &p, const Point &target, const std::string &path, double 
 */
 
 // img size 48*48
+
+constexpr char prop_sound_path[] = "./assets/sound/prop.mp3";
 namespace PropSetting{
 	static constexpr char prop_imgs_root_path[static_cast<int>(PropsType::PropsTpye_Max)][50] = {
 		"./assets/image/Prop/2_Icons/Icon_05.png",
@@ -108,19 +111,22 @@ Prop::draw() {
 
 void Prop::Prop_effect(CharacterBase &CH){
 	if (fly_dist <= -1)return;
-
+	SoundCenter *SC = SoundCenter::get_instance();
 	switch (this->type)
 	{
 	//   void set_effect_val(double hp, double sp_t, double sp_b, double atk_t, double atk_b); // for 外部設定
 	case PropsType::Healthy:
 		CH.set_effect_val(100, 0, 0, 0, 0);
+		SC->play(prop_sound_path, ALLEGRO_PLAYMODE_ONCE);
 		break;
 	case PropsType::Haste:
 		CH.set_effect_val(0, 1.5, val, 0, 0);
+		SC->play(prop_sound_path, ALLEGRO_PLAYMODE_ONCE);
 		break;
 	case PropsType::Crit:
 		CH.set_effect_val(0, 0, 0, 1.0, val);
-		printf("1");
+		SC->play(prop_sound_path, ALLEGRO_PLAYMODE_ONCE);
+		//printf("1");
 	default:
 		break;
 	}

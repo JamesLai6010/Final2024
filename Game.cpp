@@ -505,6 +505,10 @@ Game::game_update() {
     			gamebackgroundBGM = SC->play(game_sound_path, ALLEGRO_PLAYMODE_LOOP);
     			gameBGM = true;
 			}
+			if (DC->key_state[ALLEGRO_KEY_F12]) {
+				DC->character1->_set_HP(1000);
+				DC->character2->_set_HP(1000);
+			}
 			//快轉後退
 			if (DC->key_state[ALLEGRO_KEY_BACKSPACE] && !DC->prev_key_state[ALLEGRO_KEY_BACKSPACE]) {
     			if (fastForwardState == 0) {
