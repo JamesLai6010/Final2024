@@ -260,6 +260,12 @@ void CharacterBase::update_effects() {
             tp_gif = false;
         }
     }
+
+    if (life_steal_timer > 0) { 
+        life_steal_timer -= 1.0 / 60.0;
+    } else {
+        life_steal_timer = 0;
+    }
 }
 
 
@@ -283,6 +289,10 @@ void CharacterBase::handle_attack_input(DataCenter* DC) {
         if (role == 2) {
             if (attack_timer - 0.5 != 0) return;
             shoot(4.0);
+        }
+        if (role == 3) {
+            if (attack_timer - 0.5 != 0) return;
+            lifesteal(5.0);
         }
         Rage += 5;
     } else if (DC->key_state[key_attack3]) {
@@ -434,6 +444,9 @@ double CharacterBase::_get_ATKtimer()const{
 double CharacterBase::_set_HP(double hp){
     if (shield_value > 0) shield_value += hp;
     else HP += hp;
+
+    // 限制血量不超過上限
+    HP = std::min(HP, max_HP);
 }
 double CharacterBase::_set_Rage(double rage){
     Rage += rage;
@@ -552,6 +565,7 @@ void CharacterBase::reset() {
     shield_timer = 0.0;
     hurt_timer = 0.0;
     tp_gif_timer = 0.0;
+    life_steal_timer = 0.0;
     projectiles.clear();  //清空子彈
 
     // 重置位置
@@ -656,4 +670,12 @@ void CharacterBase::sprint_update(){
             
         }
     }
+}
+
+void CharacterBase::lifesteal(double time) {
+    life_steal_timer = time;
+}
+
+bool CharacterBase::_get_lifesteal() {
+    return life_steal_timer > 0;
 }

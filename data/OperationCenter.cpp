@@ -205,6 +205,7 @@ void OperationCenter::_update_character12() {
 
 void OperationCenter::skill_damage(CharacterBase& caster, CharacterBase& target, double damage) {
     target._set_HP(-(damage + caster._get_ATKbias())); // 扣血
+	if (caster._get_lifesteal()) caster._set_HP((damage + caster._get_ATKbias()) / 2);
     std::cout << "Damage skill applied! Target HP: " << target._get_HP() << "\n";
 }
 

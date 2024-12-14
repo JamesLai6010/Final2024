@@ -102,8 +102,9 @@ public:
 
     void start_invincible(double t);
     void invincible_update();
-    
 
+    void lifesteal(double t);
+    bool _get_lifesteal();
     struct Projectile {
         double x;          // 當前的 x 座標
         double y;          // 當前的 y 座標
@@ -148,6 +149,7 @@ protected:
     ALGIF_ANIMATION* bulletRIGHT_animation = nullptr;
     // 角色參數
     double HP = 1000;
+    double max_HP = 1000;
     double Rage = 0; // 怒氣值，觸發大招
     double speed = 5.0;
     double scale_x = 1.0, scale_y = 1.0;
@@ -201,7 +203,7 @@ protected:
     double Atk_timer = 0; 
     double Atk_bias = 0;
     double tp_gif_timer = 0.0;
-
+    double life_steal_timer = 0.0;
     // 初始位置
     double initial_x = 300;
     double initial_y = ground_level;
