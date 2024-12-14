@@ -55,11 +55,13 @@ public:
     double _set_Rage(double rage);
 
     // attack oppent, set their val
-    void attack_opponent(CharacterBase &opp);
+    void attack_opponent(CharacterBase &opp); // no use
     //擊退效果
     void start_knockback(double distance, double direction);
     void update_knockback();
     void set_slide_timer(double t);
+
+
     void _set_poisonTimer(double t);
     double _get_ATKbias();
     void _set_Rage_status(bool );
@@ -85,8 +87,20 @@ public:
     void update_projectiles();     // 更新射出物位置
     void draw_projectiles();       // 繪製射出物
 
+
+    void sprint_init(int dir, double distance, CharacterState nxt_state);
+    void sprint_update();
+    double _get_sprint_timer();
+    void _set_sprint_flag(bool);
+    bool _get_sprint_flag();
+    
+    void _set_role_number(int x){
+        role = x;
+    }
     //重新玩
     void reset();
+
+    
 
     struct Projectile {
         double x;          // 當前的 x 座標
@@ -100,6 +114,14 @@ public:
 
 
 protected:  
+    bool ATK_flag = false;
+    CharacterState atk_flag_state = CharacterState::NONE;
+    bool is_sprint = false;
+    double sprint_distance;
+    double sprint_dir;
+    double sprint_speed = 0.0;
+    double sprint_timer = 0;
+    bool sprint_dective = false;
 
 
     // 狀態與動畫
@@ -182,7 +204,7 @@ protected:
     // 碰撞箱
     void update_bounding_box();
 
-    
+    int role = 0;
 
     
 

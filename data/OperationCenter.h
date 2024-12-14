@@ -45,6 +45,10 @@ public:
 	void _update_projectiles();
 	void _detect_far_attack();
 
+	//void sprint_attack();
+	//void skill_sprintATK(CharacterBase& caster, double dis, int state);
+
+
 private:
 	OperationCenter() {}
 private:

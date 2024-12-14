@@ -135,7 +135,7 @@ void CharacterBase::update() {
             if (!is_attacking && !is_jumping) {
                 set_state(CharacterState::WALK);
             }
-        } else if (!is_attacking && !is_jumping && !is_hurting) {
+        } else if (!is_attacking && !is_jumping && !is_hurting && !is_sprint) {
             set_state(CharacterState::STOP); // 停止狀態
         }
     }
@@ -167,6 +167,11 @@ void CharacterBase::update() {
             sliding = false;
             set_state(CharacterState::STOP);
         }
+    }
+
+    if (is_sprint){
+        sprint_update();
+        sprint_timer -= 1.0 / 60.0;
     }
 
     // 邊界檢查
@@ -238,9 +243,15 @@ void CharacterBase::update_effects() {
 //處理攻擊
 void CharacterBase::handle_attack_input(DataCenter* DC) {
     if (DC->key_state[key_attack1]) {
-        set_state(CharacterState::ATTACK1);
-        is_attacking = true;
-        attack_timer = attack_duration;
+        if (role == 1){
+            int d = (is_facing_left)? -1:1;
+            sprint_init(d, 400.0, CharacterState::ATTACK1);
+        }else{
+            set_state(CharacterState::ATTACK1);
+            is_attacking = true;
+            attack_timer = attack_duration;
+        }
+        
         Rage += 5;
     } else if (DC->key_state[key_attack2]) {
         set_state(CharacterState::ATTACK2);
@@ -565,3 +576,45 @@ void CharacterBase::update_projectiles() {
     projectiles = std::move(active_projectiles);
 }
 
+void CharacterBase::_set_sprint_flag(bool b){
+    sprint_dective = b;
+}
+bool CharacterBase::_get_sprint_flag(){
+    return sprint_dective;
+}
+
+void CharacterBase::sprint_init(int dir, double distance, CharacterState nxt_state){
+    ATK_flag = true;
+    atk_flag_state = nxt_state;
+    is_attacking = false;
+    attack_timer = 0;
+    is_sprint = true;
+    sprint_dective = true;
+    sprint_timer = 1.0;
+    sprint_dir = dir;
+    sprint_distance = distance;
+    sprint_speed = sprint_distance / 60.0; 
+    set_state(CharacterState::RUN);
+}
+
+double CharacterBase::_get_sprint_timer(){
+    return sprint_timer;
+}
+void CharacterBase::sprint_update(){
+    if (!is_sprint)return;
+
+    double now_step = std::min(sprint_distance, sprint_speed);
+    shape->update_center_x(shape->center_x() + now_step*sprint_dir);
+    sprint_distance -= now_step;
+    if (sprint_distance <= 0){
+        is_sprint = false;
+        sprint_dective = false;
+        if (ATK_flag){
+            is_attacking = true;
+            set_state(atk_flag_state);
+            attack_timer = attack_duration;
+            ATK_flag = false;
+            
+        }
+    }
+}

@@ -94,10 +94,26 @@ void OperationCenter::_update_character12() {
 	_detect_far_attack();
 	_update_projectiles();
 
+
 	// first check touch
 	if (!(CH1.shape->overlap(*(DC->character2->shape)))){
 		return;
 	}
+
+	
+	bool ch1_sprint = (CH1._get_state() == CharacterState::RUN && CH1._get_sprint_flag());
+	bool ch2_sprint = (CH2._get_state() == CharacterState::RUN && CH2._get_sprint_flag());
+	if ((ch1_sprint && ch2_sprint) || (!ch1_sprint && !ch2_sprint)){}
+	if (ch1_sprint && !ch2_sprint){
+		skill_knockback(CH1, CH2, 100.0);
+		CH1._set_sprint_flag(false);
+		CH2.set_state(CharacterState::HURT);
+	}else if (!ch1_sprint && ch2_sprint){
+		skill_knockback(CH2, CH1, 100.0);
+		CH2._set_sprint_flag(false);
+		CH1.set_state(CharacterState::HURT);
+	}
+
 	bool ch1_isAttack = (CH1._get_state() == CharacterState::ATTACK1 || CH1._get_state() == CharacterState::ATTACK2 || CH1._get_state() == CharacterState::ATTACK3);
 	bool ch2_isAttack = (CH2._get_state() == CharacterState::ATTACK1 || CH2._get_state() == CharacterState::ATTACK2 || CH2._get_state() == CharacterState::ATTACK3);
 
@@ -140,7 +156,7 @@ void OperationCenter::_update_character12() {
 			//std::cout << "HIT1" << std::endl;
 			return;
 		}else{
-			CH1.attack_opponent(CH2);
+			//CH1.attack_opponent(CH2);
 			CH2.set_state(CharacterState::HURT);
 		}
 	}else if (ch2_valid){
@@ -154,7 +170,7 @@ void OperationCenter::_update_character12() {
 			//std::cout << "HIT2" << std::endl;
 			return;
 		}else{
-			CH2.attack_opponent(CH1);
+			//CH2.attack_opponent(CH1);
 			CH1.set_state(CharacterState::HURT);
 		}
 	}
@@ -213,6 +229,8 @@ void OperationCenter::skill_SlowDown(CharacterBase& caster, CharacterBase& targe
 
 void OperationCenter::skill1(CharacterBase& caster, CharacterBase& target, int role_number){
 	if (role_number == 1) {
+		//skill_sprintATK(caster, 400.0, 1);
+		
 		skill_freeze(caster, target, 2.0); // 凍住 2 秒
 		skill_damage(caster, target, 40);
 	} else if (role_number == 2) {

@@ -429,6 +429,8 @@ Game::game_update() {
 				debug_log("Player 1 Name: %s\n", player1_name.c_str());
     			debug_log("Player 2 Name: %s\n", player2_name.c_str());
 				set_player_roles();
+				DC->character1->_set_role_number(player1_character.number);
+				DC->character2->_set_role_number(player2_character.number);
 				countdown_timer = 3.0;
 				start_countdown = true;
         		state = STATE::COUNTDOWN;
