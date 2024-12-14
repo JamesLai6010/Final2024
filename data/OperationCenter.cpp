@@ -201,8 +201,6 @@ void OperationCenter::_update_character12() {
 }
 
 
-
-
 void OperationCenter::skill_damage(CharacterBase& caster, CharacterBase& target, double damage) {
     target._set_HP(-(damage + caster._get_ATKbias())); // 扣血
 	if (caster._get_lifesteal()) caster._set_HP((damage + caster._get_ATKbias()) / 2);
@@ -229,67 +227,79 @@ void OperationCenter::skill_SlowDown(CharacterBase& caster, CharacterBase& targe
 }
 
 void OperationCenter::skill1(CharacterBase& caster, CharacterBase& target, int role_number){
+	//先判斷角色1
 	if (role_number == 1) {
-		//skill_sprintATK(caster, 400.0, 1);
-		
-		skill_freeze(caster, target, 2.0); // 凍住 2 秒
-		skill_damage(caster, target, 40);
-	} else if (role_number == 2) {
-		skill_freeze(caster, target, 2.0); // 凍住 2 秒
-		skill_damage(caster, target, 40); // 玩家2攻擊玩家1，扣40血
-		
+		skill_damage(caster, target, 30); // 玩家2攻擊玩家1，扣40血
+		return;
+	}
+	
+	if (caster._get_Rage() >= 10) {
+		if (role_number == 2) {
+			skill_SlowDown(caster, target, 3.0); //角色2技能1緩速
+			skill_damage(caster, target, 40); // 玩家2攻擊玩家1，扣40血
+			caster._set_Rage(-10);
+		} else if (role_number == 3) {
+			skill_freeze(caster, target, 1.0); //角色3技能1冰凍
+			skill_damage(caster, target, 20); // 玩家2角色3使用攻擊1
+			caster._set_Rage(-10);
+		}
+		return;
+	}
+	
+	if (role_number == 2) {
+		skill_damage(caster, target, 30); // 角色2普攻
 	} else if (role_number == 3) {
-		skill_freeze(caster, target, 2.0); // 凍住 2 秒
-		skill_damage(caster, target, 45); // 玩家2角色3使用攻擊1
-	} else if (role_number == 4) {
-		skill_freeze(caster, target, 2.0); // 凍住 2 秒
-		skill_damage(caster, target, 55); // 玩家2角色4使用攻擊1
+		skill_damage(caster, target, 30); // 角色3普攻
 	}
 }
 
 void OperationCenter::skill2(CharacterBase& caster, CharacterBase& target, int role_number){
+	//先判斷這普攻或技能攻擊因為技能寫在base
+	if (role_number == 3) {
+		skill_damage(caster, target, 50);
+		return;
+	}
+	
+	if (caster._get_Rage() >= 50) {
+		if (role_number == 1) {
+			skill_damage(caster, target, 50);
+			skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+			caster._set_Rage(-50);
+		} else if (role_number == 2) {
+			skill_damage(caster, target, 50);
+			skill_poison(caster, target, 5.0);
+			caster._set_Rage(-50);
+		}
+		return;
+	}
+	//角色1普攻
 	if (role_number == 1) {
-		skill_teleport_behind(caster, target, 200.0); // 傳送距離設為 50 像素
-		//skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+		skill_damage(caster, target, 50);
 	} else if (role_number == 2) {
-		//skill_damage(caster, target, 35);
-		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
-		skill_poison(caster, target, 10);
-	} else if (role_number == 3) {
-		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
-	} else if (role_number == 4) {
-		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+		skill_damage(caster, target, 50);
 	}
 }
 
 void OperationCenter::skill3(CharacterBase& caster, CharacterBase& target, int role_number){
+	if (role_number == 1) {
+		skill_damage(caster, target, 50); // 距離 100，速度 10
+		return;
+	} else if (role_number == 3) {
+		skill_damage(caster, target, 50);
+	}
+	
 	if (caster._get_Rage() >= 100){
 		
-		if (role_number == 1) {
-			skill_shield(caster, 200, 5.0); // 為自己提供150護盾值，持續5秒
-			skill_SlowDown(caster, target, 3);
-		} else if (role_number == 2) {
-			skill_shield(caster, 200, 5.0); // 為自己提供150護盾值，持續5秒
-			skill_SlowDown(caster, target, 3);
-		} else if (role_number == 3) {
-			skill_shield(caster, 200, 5.0); // 為自己提供150護盾值，持續5秒
-			skill_SlowDown(caster, target, 3);
-		} else if (role_number == 4) {
-			skill_shield(caster, 200, 5.0); // 為自己提供150護盾值，持續5秒
-			skill_SlowDown(caster, target, 3);
-		}
-		caster._set_Rage(-1*caster._get_Rage());
+		if (role_number == 3) {
+			skill_teleport_behind(caster, target, 200);
+			skill_damage(caster, target, 50.0); // 距離 100，速度 10
+			caster._set_Rage(-100);
+		}		
 		return;
 	}
 
-	if (role_number == 1) {
-		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
-	} else if (role_number == 2) {
-		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
-	} else if (role_number == 3) {
-		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
-	} else if (role_number == 4) {
-		skill_knockback(caster, target, 200.0); // 距離 100，速度 10
+	if (role_number == 3) {
+		skill_damage(caster, target, 50.0); // 距離 100，速度 10
 	}
 }
 
@@ -339,7 +349,8 @@ void OperationCenter::_update_projectiles() {
     // 檢查角色1的子彈是否擊中角色2
     for (auto& proj : CH1.projectiles) {
         if (proj.shape->overlap(*CH2.shape)) {
-            CH2._set_HP(-20); // 假設子彈造成20點傷害
+            CH2._set_HP(-50); // 假設子彈造成20點傷害
+			CH2.set_state(CharacterState::HURT);
             std::cout << "Projectile from CH1 hit CH2! CH2 HP: " << CH2._get_HP() << std::endl;
             proj.lifetime = 0; // 讓子彈失效
         }
@@ -348,7 +359,8 @@ void OperationCenter::_update_projectiles() {
     // 檢查角色2的子彈是否擊中角色1
     for (auto& proj : CH2.projectiles) {
         if (proj.shape->overlap(*CH1.shape)) {
-            CH1._set_HP(-20); // 假設子彈造成20點傷害
+            CH1._set_HP(-50); // 假設子彈造成20點傷害
+			CH1.set_state(CharacterState::HURT);
             std::cout << "Projectile from CH2 hit CH1! CH1 HP: " << CH1._get_HP() << std::endl;
             proj.lifetime = 0; // 讓子彈失效
         }

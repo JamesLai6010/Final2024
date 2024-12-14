@@ -51,7 +51,7 @@ public:
     double _get_ATKtimer()const;
 
     // set character val
-    double _set_HP(double hp);
+    void _set_HP(double hp);
     double _set_Rage(double rage);
 
     // attack oppent, set their val
@@ -147,11 +147,13 @@ protected:
     ALGIF_ANIMATION* teleport_animation = nullptr;
     ALGIF_ANIMATION* bulletLEFT_animation = nullptr;
     ALGIF_ANIMATION* bulletRIGHT_animation = nullptr;
+    ALGIF_ANIMATION* lifesteal_animation = nullptr;
+    ALGIF_ANIMATION* smoke_animation = nullptr;
     // 角色參數
     double HP = 1000;
     double max_HP = 1000;
     double Rage = 0; // 怒氣值，觸發大招
-    double speed = 5.0;
+    double speed = 8.0;
     double scale_x = 1.0, scale_y = 1.0;
     bool is_facing_left = false;
     bool is_attacking = false;

@@ -8,6 +8,7 @@
 #include <iostream>
 
 constexpr char minecraftHit_sound_path[] = "./assets/sound/MinecraftHit.mp3";
+constexpr char shoot_sound_path[] = "./assets/sound/shoot.mp3";
 
 void CharacterBase::update_bounding_box() {
     if (current_animation) {
@@ -46,6 +47,8 @@ void CharacterBase::init() {
     teleport_animation = GIFC->get("./assets/gif/tp.gif");
     bulletLEFT_animation = GIFC->get("./assets/gif/shootLEFT.gif");
     invincible_animation = GIFC->get("./assets/gif/Effect_Impact_1.gif");
+    lifesteal_animation = GIFC->get("./assets/gif/lifesteal.gif");
+    //smoke_animation = GIFC->get("./assets/gif/smoke1.gif");
     //bulletRIGHT_animation = GIFC->get("./assets/gif/shootRIGHT.gif");
 
     // 加載初始動畫 (靜止)
@@ -203,6 +206,7 @@ void CharacterBase::invincible_update(){
 //各項效果，輸入統整為秒
 void CharacterBase::update_effects() {
     // 更新速度加成效果
+    SoundCenter *SC = SoundCenter::get_instance();
     if (Speed_timer > 0) { 
         Speed_timer -= 1.0 / 60.0;
     } else {
@@ -240,8 +244,10 @@ void CharacterBase::update_effects() {
             is_poisoned = false;
         }
         if ((int)poison_timer % 2) {
-            if (!is_invincible)
-                HP -= 0.1; // 每秒扣血
+            if (!is_invincible) {
+                HP -= 0.5; // 每秒扣血
+                //SC->play(minecraftHit_sound_path, ALLEGRO_PLAYMODE_ONCE);
+            }
         }
     }
 
@@ -271,42 +277,54 @@ void CharacterBase::update_effects() {
 
 //處理攻擊
 void CharacterBase::handle_attack_input(DataCenter* DC) {
+    SoundCenter *SC = SoundCenter::get_instance();
     if (DC->key_state[key_attack1]) {
-        if (role == 1){
+        if (role == 1 && Rage >= 10){
             int d = (is_facing_left)? -1:1;
             sprint_init(d, 400.0, CharacterState::ATTACK1);
+            Rage -= 10;
         }else{
             set_state(CharacterState::ATTACK1);
             is_attacking = true;
             attack_timer = attack_duration;
+            Rage += 5;
         }
-        
-        Rage += 5;
     } else if (DC->key_state[key_attack2]) {
         set_state(CharacterState::ATTACK2);
         is_attacking = true;
         attack_timer = attack_duration;
-        if (role == 2) {
-            if (attack_timer - 0.5 != 0) return;
-            shoot(4.0);
-        }
-        if (role == 3) {
+        
+        if (role == 3 && Rage >= 50) {
             if (attack_timer - 0.5 != 0) return;
             lifesteal(5.0);
+            Rage -= 50;
         }
         Rage += 5;
     } else if (DC->key_state[key_attack3]) {
-        if (role == 1){
-            start_invincible(1);
+        if (role == 1 && Rage >= 100){
+            start_invincible(5.0);
+            Rage -= 100;
         }
         set_state(CharacterState::ATTACK3);
         is_attacking = true;
         attack_timer = attack_duration;
         Rage += 5;
+
+        if (role == 2 && Rage >= 100) {
+            if (attack_timer - 0.5 != 0) return;
+            shoot(4.0);
+            Rage -= 100;
+            SC->play(shoot_sound_path, ALLEGRO_PLAYMODE_ONCE);
+        }
     } else if (DC->key_state[key_shield]) {
         set_state(CharacterState::SHIELD);
         is_attacking = true;
         attack_timer = shield_duration;
+        if (Rage >= 50) {
+            if (attack_timer - 0.7 != 0) return;
+            _set_shield(200, 5.0);
+            Rage -= 50;
+        }
     }
 }
 //處理跳躍
@@ -400,6 +418,12 @@ void CharacterBase::draw() {
         algif_draw_gif(teleport_animation, effect_x, effect_y, 0);
     }
 
+    if (life_steal_timer > 0) {
+        float effect_x = shape->center_x() - (lifesteal_animation->width * scale_x) / 2;
+        float effect_y = shape->center_y() + (current_animation->height * scale_y) / 2 - (lifesteal_animation->height * scale_y);
+        algif_draw_gif(lifesteal_animation, effect_x, effect_y, 0);
+    }
+
     for (const auto& proj : projectiles) {
         bool facing_left = proj.velocity_x < 0; // 判斷子彈方向
         algif_draw_gif(bulletLEFT_animation, proj.x, proj.y, facing_left ? 0 : ALLEGRO_FLIP_HORIZONTAL);
@@ -441,10 +465,11 @@ double CharacterBase::_get_ATKtimer()const{
     return attack_timer;
 }
 
-double CharacterBase::_set_HP(double hp){
+void CharacterBase::_set_HP(double hp){
+    if (is_invincible) return;
     if (shield_value > 0) shield_value += hp;
     else HP += hp;
-
+    if (hp < 0) Rage += -(hp / 2);
     // 限制血量不超過上限
     HP = std::min(HP, max_HP);
 }
@@ -566,6 +591,8 @@ void CharacterBase::reset() {
     hurt_timer = 0.0;
     tp_gif_timer = 0.0;
     life_steal_timer = 0.0;
+    is_invincible = false;
+    invincible_time = 0.0;
     projectiles.clear();  //清空子彈
 
     // 重置位置

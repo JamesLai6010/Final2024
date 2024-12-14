@@ -20,7 +20,7 @@ void BackgroundINF::init() {
     GIFCenter *GC = GIFCenter::get_instance();
     bolt = IC->get(bolt_img_path);
     heart = GC->get(heart_gif_path);
-    Time = 30;
+    Time = 180;
     player1_HP = max_HP;
     player2_HP = max_HP;
     Player1_Rage = 0;
