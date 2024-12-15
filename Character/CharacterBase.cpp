@@ -280,6 +280,7 @@ void CharacterBase::handle_attack_input(DataCenter* DC) {
     SoundCenter *SC = SoundCenter::get_instance();
     if (DC->key_state[key_attack1]) {
         if (role == 1 && Rage >= 10){
+            if (is_sprint)return;
             int d = (is_facing_left)? -1:1;
             sprint_init(d, 400.0, CharacterState::ATTACK1);
             Rage -= 10;

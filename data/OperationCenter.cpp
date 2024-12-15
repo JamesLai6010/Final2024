@@ -110,11 +110,11 @@ void OperationCenter::_update_character12() {
 	if (ch1_sprint && !ch2_sprint){
 		skill_knockback(CH1, CH2, 100.0);
 		CH1._set_sprint_flag(false);
-		CH2.set_state(CharacterState::HURT);
+		//CH2.set_state(CharacterState::HURT);
 	}else if (!ch1_sprint && ch2_sprint){
 		skill_knockback(CH2, CH1, 100.0);
 		CH2._set_sprint_flag(false);
-		CH1.set_state(CharacterState::HURT);
+		//CH1.set_state(CharacterState::HURT);
 	}
 
 	bool ch1_isAttack = (CH1._get_state() == CharacterState::ATTACK1 || CH1._get_state() == CharacterState::ATTACK2 || CH1._get_state() == CharacterState::ATTACK3);
