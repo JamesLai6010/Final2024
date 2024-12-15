@@ -167,6 +167,7 @@ void CharacterBase::update() {
     if (sliding) {
         update_knockback();
         slide_timer -= 1.0 / 60.0;
+        set_state(CharacterState::SLIDE);
         if (slide_timer <= 0) {
             sliding = false;
             set_state(CharacterState::STOP);

@@ -352,7 +352,7 @@ void OperationCenter::_update_projectiles() {
     // 檢查角色1的子彈是否擊中角色2
     for (auto& proj : CH1.projectiles) {
         if (proj.shape->overlap(*CH2.shape)) {
-            CH2._set_HP(-50); // 假設子彈造成20點傷害
+            CH2._set_HP(-100); // 假設子彈造成20點傷害
 			CH2.set_state(CharacterState::HURT);
             std::cout << "Projectile from CH1 hit CH2! CH2 HP: " << CH2._get_HP() << std::endl;
             proj.lifetime = 0; // 讓子彈失效
@@ -362,7 +362,7 @@ void OperationCenter::_update_projectiles() {
     // 檢查角色2的子彈是否擊中角色1
     for (auto& proj : CH2.projectiles) {
         if (proj.shape->overlap(*CH1.shape)) {
-            CH1._set_HP(-50); // 假設子彈造成20點傷害
+            CH1._set_HP(-100); // 假設子彈造成20點傷害
 			CH1.set_state(CharacterState::HURT);
             std::cout << "Projectile from CH2 hit CH1! CH1 HP: " << CH1._get_HP() << std::endl;
             proj.lifetime = 0; // 讓子彈失效
@@ -415,7 +415,7 @@ void OperationCenter::update_meteors() {
 
         // 判斷是否撞到角色 1
         if (meteor.shape->overlap(*(CH1.shape))) {
-            CH1._set_HP(-30); // 扣除角色 1 血量 (10 點)
+            CH1._set_HP(-50); // 扣除角色 1 血量 (10 點)
 			CH1.set_state(CharacterState::HURT);
 			SC->play(bomb_sound_path, ALLEGRO_PLAYMODE_ONCE);
             meteor.toDelete = true; // 隕石標記為刪除
@@ -424,7 +424,7 @@ void OperationCenter::update_meteors() {
 
         // 判斷是否撞到角色 2
         else if (meteor.shape->overlap(*(CH2.shape))) {
-            CH2._set_HP(-30); // 扣除角色 2 血量 (10 點)
+            CH2._set_HP(-50); // 扣除角色 2 血量 (10 點)
 			CH2.set_state(CharacterState::HURT);
 			SC->play(bomb_sound_path, ALLEGRO_PLAYMODE_ONCE);
             meteor.toDelete = true; // 隕石標記為刪除
